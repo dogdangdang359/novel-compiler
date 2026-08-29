@@ -46,6 +46,14 @@ function log(lines) {
   el.scrollTop = el.scrollHeight;
 }
 function setStatus(s) { $('#status-right').textContent = s; }
+// 创作者模式的轻量任务状态（技术日志已对创作者隐藏，这里用一句话反馈当前在做什么）
+const TOOL_CN = { '生成报告': '一键生成报告', simulate: '模拟', 'extract-llm': '提取', 'extract-ch': '提取本章', compare: '比对', rebase: '重规划', review: '审阅', refactor: '重构', compile: '编译' };
+function setAiStatus(text, kind = 'idle') {
+  const el = $('#ai-status');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'creator-only status-' + kind;
+}
 function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -407,11 +415,23 @@ function renderDashboard(canon) {
     dashRow(k.name, `获知@${k.known_from_chapter} · ${asArray(k.holders).map(nameOf).join('/')}`, false)).join('')
     || '<div class="empty">无知识</div>';
 }
+// 对象栏分类：角色 / 地点 / 物件（type 来自 canon schema 枚举 character|location|item）
+const ENT_ORDER = ['character', 'location', 'item'];
+const ENT_LABEL = { character: '角色', location: '地点', item: '物件' };
+function renderEntityGroups(list) {
+  const groups = {};
+  asArray(list).forEach((e) => { (groups[e.type || 'other'] = groups[e.type || 'other'] || []).push(e); });
+  const kinds = ENT_ORDER.concat(Object.keys(groups).filter((k) => !ENT_ORDER.includes(k)));
+  const body = kinds.filter((k) => groups[k]).map((k) =>
+    `<div class="entity-group">
+       <div class="entity-group-title">${escapeHtml(ENT_LABEL[k] || k)}<span class="entity-group-count">${groups[k].length}</span></div>
+       ${groups[k].map((e) => dashRow(e.name, `${e.activeChapters}/${e.totalChapters}章${e.present ? '' : ' · 本期未现身'}`, !e.present)).join('')}
+     </div>`).join('');
+  return body || '<div class="empty">无实体</div>';
+}
 function renderDashboardFromCompile(snapshot) {
   if (!snapshot) return;
-  $('#dash-entities').innerHTML = asArray(snapshot.entities).map((e) =>
-    dashRow(e.name, `${e.type} · ${e.activeChapters}/${e.totalChapters}章`, !e.present)).join('')
-    || '<div class="empty">无实体</div>';
+  $('#dash-entities').innerHTML = renderEntityGroups(snapshot.entities);
   $('#dash-suspense').innerHTML = asArray(snapshot.suspense).map((s) => {
     const st = s.status === 'resolved' ? '✓ 已回收' : (s.status === 'planned' ? '… 未到期' : '⚠ 悬置中');
     return dashRow(s.name, `埋@${s.planted ?? '?'} ${st}`, s.status !== 'resolved');
@@ -841,6 +861,7 @@ function setRunning(on, tool) {
     $(sel).disabled = busy;
   }
   setStatus(busy ? `⏳ 运行中: ${tool} …（输出实时流入下方日志）` : (state.mode === 'creator' ? '就绪' : '就绪（F5 编译）'));
+  setAiStatus(busy ? `⏳ ${TOOL_CN[tool] || tool}运行中…` : '✅ 就绪', busy ? 'busy' : 'idle');
 }
 
 // ---------- 生成报告（一键流水线 · 创作者模式主入口） ----------

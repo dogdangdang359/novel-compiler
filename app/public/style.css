@@ -208,6 +208,23 @@ body.mode-creator .logo-sub { display: none; }
 .dash-row .v { color: var(--fg-dim); text-align: right; }
 .dash-row.warn .k { color: var(--warning); }
 .dash-row.warn .v { color: var(--warning); }
+.entity-group { margin-bottom: 8px; }
+.entity-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 6px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+}
+.entity-group-count { color: var(--fg-dim); font-size: 10px; }
+.entity-group .dash-row:last-child { border-bottom: none; }
 .empty { color: var(--fg-dim); padding: 6px; font-size: 12px; }
 
 /* 世界观图谱 */
@@ -277,6 +294,19 @@ body.mode-creator .logo-sub { display: none; }
   color: #d4d4d4;
   border-top: 1px solid var(--border);
 }
+/* 创作者模式的轻量任务状态条（技术日志已对创作者隐藏，这里给出当下一步在做什么） */
+#ai-status {
+  margin: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--panel2);
+  font-size: 12.5px;
+  color: var(--fg-dim);
+}
+#ai-status.status-busy { color: var(--info); border-color: var(--info); }
+#ai-status.status-ok { color: var(--ok); border-color: var(--ok); }
+#ai-status.status-err { color: var(--error); border-color: var(--error); }
 
 /* ---------- 底部 problems ---------- */
 #problems {
