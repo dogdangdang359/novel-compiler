@@ -16,6 +16,8 @@ const { TOOL_TIMEOUT_MS, atomicWrite, pruneBackups, acquireFileLock, checkFileLo
 const { VERSION } = require('./src/version');
 const { loadEnvelopeOrCanon } = require('./src/canonio');
 const { takeValue } = require('./src/cli');
+const { loadLLMEnv } = require('./src/env');
+const { missingKeyHint } = require('./src/providers');
 
 const SIM = path.join(__dirname, 'simulate.js');
 
@@ -123,14 +125,23 @@ function main(argv) {
   }
 
   // 推导 rebase 输入（优先命令行参数，其次预测信封的 meta）
-  // 兼容三级：新信封 meta.source_* 是绝对路径；相对路径先按预测文件目录解析
-  // （预测文件与大纲/前提通常同项目目录）；不存在则回退按当前 cwd 解析（旧信封语义）
   const meta = predEnv && predEnv.meta ? predEnv.meta : {};
+  // 兼容三级：新信封 meta.source_* 是绝对路径；相对路径旧信封存的是 ROOT 相对路径，
+  // 而更老的信封可能是预测文件同目录相对路径——两个候选都尝试。
+  // 旧实现存在 cwd 兜底：相对路径在预测文件目录解析不到就静默按当前 cwd 解析，若 cwd
+  // 恰好有同名文件会错用错误大纲/前提（系统性预测偏差且无告警）。现改为：命中唯一候选
+  // 才用；多个候选是不同文件 → 不猜直接报错；一个都没有 → 返回 null 交调用方提示显式指定。
   const resolveFrom = (p) => {
     if (!p) return null;
     if (path.isAbsolute(p)) return p;
-    const byPred = path.resolve(path.dirname(predPath), p);
-    return fs.existsSync(byPred) ? byPred : path.resolve(p);
+    const candidates = new Set([path.resolve(path.dirname(predPath), p), path.resolve(p)]);
+    const found = [...candidates].filter((c) => fs.existsSync(c));
+    if (found.length > 1) {
+      console.error(`✗ 相对路径「${p}」在多个位置解析到不同文件，无法判定用哪个；请改用绝对路径或 --outline/--premise 显式指定：`);
+      found.forEach((f) => console.error(`  - ${f}`));
+      process.exit(2);
+    }
+    return found.length ? found[0] : null;
   };
   const outline = outlineArg || resolveFrom(meta.source_outline);
   if (!outline) {
@@ -141,9 +152,12 @@ function main(argv) {
   const reader = readerArg || meta.target_reader || 'genre';
   const target = outFile || `${predPath}.rebase.json`;
 
-  if (!dryRun && !process.env.DEEPSEEK_API_KEY) {
-    console.error('✗ 检测到漂移需要 rebase，但缺少 DEEPSEEK_API_KEY 环境变量（可读取 .dsh-home/.credentials.yaml 中的同名项注入）');
-    process.exit(2);
+  if (!dryRun) {
+    const env = loadLLMEnv();
+    if (!env.apiKey) {
+      console.error(`✗ 检测到漂移需要 rebase，但 ${missingKeyHint(env.provider)}`);
+      process.exit(2);
+    }
   }
 
   // 覆盖式 rebase（--out 指向预测文件本身，IDE 缺省走此路径）：旧预测先备份再覆盖——

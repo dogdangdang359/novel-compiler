@@ -15,6 +15,26 @@ node refactor.js    <手稿.md> <canon.json> <outline.md> <premise.md> # 重构�
 
 退出码：`0` = 无 error 级问题 · `1` = 存在 error/警告级偏差（rebase 语义：1 = 漂移已处理）· `2` = 输入/canon 校验错误。
 
+## LLM 供应商（v0.4.4+ 多供应商适配层）
+
+所有 AI 工具（simulate / extract-llm / refactor / rebase / IDE 的模拟/提取/重构/重规划）走统一的 OpenAI 兼容 `chat/completions` 协议，通过 `src/providers.js` 可插拔多供应商：
+
+| 供应商 | 选择方式 | API key 环境变量 | 默认模型 |
+|---|---|---|---|
+| DeepSeek（默认） | 不设或 `LLM_PROVIDER=deepseek` | `DEEPSEEK_API_KEY` | `deepseek-chat` |
+| OpenAI | `LLM_PROVIDER=openai` | `OPENAI_API_KEY` | `gpt-4o` |
+| Moonshot（Kimi） | `LLM_PROVIDER=moonshot` | `MOONSHOT_API_KEY` | `moonshot-v1-8k` |
+| 通义千问 | `LLM_PROVIDER=qwen` | `DASHSCOPE_API_KEY` | `qwen-plus` |
+| 智谱 GLM | `LLM_PROVIDER=zhipu` | `ZHIPUAI_API_KEY` | `glm-4-plus` |
+| Ollama（本地） | `LLM_PROVIDER=ollama` | 无需鉴权 | `llama3.1` |
+
+切换三原则：
+1. **显式优先**：`LLM_PROVIDER=xxx` 最优先（config.json 顶层 `provider` 字段在 IDE 场景等效）。
+2. **自动推断**：未显式指定时，按"哪个供应商的 API key 已设置"自动挑选（仅设了 `MOONSHOT_API_KEY` → 自动用 Moonshot）；都不设 → 回退 DeepSeek（历史行为）。
+3. **通用覆盖**：`LLM_BASE_URL` / `LLM_MODEL` / `LLM_API_KEY` 对任意供应商生效（接自定义 OpenAI 兼容网关）；`<PROVIDER>_BASE_URL` / `<PROVIDER>_MODEL` 覆盖该供应商默认值。
+
+向后兼容不变：只设 `DEEPSEEK_API_KEY`（无 `LLM_PROVIDER`）仍是纯 DeepSeek 行为。未知供应商属配置错误，明确报错而非静默回退。
+
 ## 完整工作流（工业流水线）
 
 ```
@@ -75,7 +95,7 @@ node rebase.js <预测.json> <实际.json> [--out <file>] [--force] [--dry-run] 
 node compile.js examples/manuscript.md examples/canon.json --reader webnovel   # 示例（as-built 演示：《风雪破庙》，与正文一致，无内置问题）
 node compile.js test/fixtures/demo-manuscript.md test/fixtures/demo-canon.json --reader webnovel   # bug 演示：《雾都迷踪》内置 7 类问题（exit 1）
 node compile.js examples/manuscript.md examples/canon.json --json > report.json # 机器可读输出
-node test/run-tests.js   # 冒烟测试（776 项断言）
+node test/run-tests.js   # 冒烟测试（813 项断言）
 
 # 模拟 + 提取 + 比对（需要 DEEPSEEK_API_KEY 环境变量）
 node simulate.js examples/outline.md --premise examples/premise.md --canon examples/canon.json --reader webnovel --out predictions/wumizongji-pred.json

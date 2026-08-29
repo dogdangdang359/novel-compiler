@@ -50,6 +50,7 @@
     <div id="dash-tabs">
       <span class="dtab active" data-view="state">状态</span>
       <span class="dtab" data-view="risks">风险登记册</span>
+      <span class="dtab" data-view="world">世界观图谱</span>
     </div>
     <div id="dash-state">
     <section>
@@ -76,6 +77,14 @@
         <button id="risk-reset" class="btn small">重置状态</button>
       </div>
       <div id="risk-list"></div>
+    </div>
+    <div id="dash-world" class="hidden">
+      <div class="risk-tools">
+        <span id="world-summary"></span>
+        <button id="world-refresh" class="btn small">刷新</button>
+      </div>
+      <div id="world-canvas"></div>
+      <div id="world-suspense"></div>
     </div>
   </aside>
 

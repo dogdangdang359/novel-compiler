@@ -18,6 +18,8 @@ const { VERSION } = require('../src/version');
 const { unwrapEnvelope } = require('../src/canonio');
 const { CANON_SECTIONS, CANON_SECTIONS_ALL, asArray } = require('../src/canon');
 const { validateParams } = require('../src/validate-params');
+const { resolveProvider } = require('../src/providers');
+const { buildWorldGraph } = require('../src/worldgraph');
 
 const APP = __dirname;
 const ROOT = path.join(APP, '..');
@@ -146,6 +148,14 @@ function apiKey() {
   return null;
 }
 
+// 解析生效 LLM 连接：供应商（config.provider 或 env 自动推断）+ 对应 API key 环境变量名。
+// 返回 { provider, keyEnv, apiKey }；spawn 子进程时据此注入正确 keyEnv，子进程 CLI 才能读到。
+function resolvedLLM() {
+  const r = resolveProvider({ provider: STATE.provider || undefined, apiKey: apiKey() || undefined });
+  const keyEnv = r.provider && r.provider !== 'ollama' ? `${r.provider.toUpperCase()}_API_KEY` : null;
+  return { provider: r.provider, keyEnv, apiKey: r.apiKey };
+}
+
 function isAllowedWrite(file) {
   const r = path.resolve(file);
   if (workFiles().includes(r)) return true;
@@ -197,31 +207,72 @@ function readText(p) {
 // ---------- 工具执行（带超时：挂起的 LLM 调用不会无限阻塞） ----------
 const { killTree } = require('../src/proctree');
 
-// 流水线工具互斥锁：同一时刻只允许一个工具进程运行（模拟/提取/重构等会写
-// last-pred.json / last-extract.json / canon 等共享状态，并发会互相覆盖）。
-// 前端按钮禁用是防误触，这里在 API 层兜底（curl/脚本直调同样被拦）。
-let toolRunning = false;
+// 流水线工具互斥锁：按活动项目粒度串行。同一项目的模拟/提取/重构会写该项目
+// 的 last-pred.json / last-extract.json / canon，并发会互相覆盖——按项目加锁，
+// 不同项目互不阻塞（原为全局锁，多项目会互相 409）。
+const toolLocks = new Set();
+const runLockKey = () => (typeof STATE.active === 'string' && STATE.active) || '_none';
+function tryLockTool() { const k = runLockKey(); if (toolLocks.has(k)) return null; toolLocks.add(k); return k; }
+function unlockTool(k) { if (k != null) toolLocks.delete(k); }
+
+// 用户透传 args 的本地纵深防线（/api/run、/api/run-stream）：全库透传的 --out
+// 等可被利用覆写任意文件。编译器也顽固：IDE 合法调用均为 ROOT 内相对路径、无 `..`、
+// 无 NUL，故采用"不依赖具体工具语法"的通用护栏——限条目/长度/体积，且每个 arg
+// 解析后必须落在 ROOT 内（拒绝绝对越界路径与 `..` 穿越）。flag 名与 reader/model 等
+// 枚举值无分隔符，经 path.resolve 落在 ROOT 下，不会误伤。
+const MAX_RUN_ARGS = 64;
+const MAX_RUN_ARG_LEN = 4096;
+const MAX_RUN_ARGS_BYTES = 64 * 1024;
+function checkRunArgs(args, root) {
+  if (!Array.isArray(args)) return 'args 必须是数组';
+  const n = args.length;
+  // 空 args 无任何覆写风险（没有位置参数不可能触发 --out），放行；只拦截过度/越界的
+  if (n > MAX_RUN_ARGS) return `args 数量过多（>${MAX_RUN_ARGS}）`;
+  let total = 0;
+  for (const a of args) {
+    if (typeof a !== 'string') return 'args 只能包含字符串';
+    if (a.length === 0) return 'args 含空字符串';
+    if (a.includes('\u0000')) return 'args 含 NUL 字节';
+    if (a.length > MAX_RUN_ARG_LEN) return `单个 arg 超长（>${MAX_RUN_ARG_LEN}）`;
+    total += a.length;
+  }
+  if (total > MAX_RUN_ARGS_BYTES) return 'args 总体积过大';
+  const rootAbs = path.resolve(root);
+  for (const a of args) {
+    const r = path.resolve(rootAbs, a);
+    if (r !== rootAbs && !r.startsWith(rootAbs + path.sep)) {
+      return `arg「${a.length > 40 ? a.slice(0, 40) + '…' : a}」解析后落在项目目录外，已拒绝（危险路径）`;
+    }
+  }
+  return null;
+}
 
 function runTool(tool, args) {
   return new Promise((resolve) => {
-    if (toolRunning) {
-      return resolve({ code: -1, stdout: '', stderr: '已有流水线任务运行中（并发会互相覆盖预测文件），请等待当前任务完成', busy: true });
+    const lockKey = tryLockTool();
+    if (lockKey === null) {
+      return resolve({ code: -1, stdout: '', stderr: '该项目已有流水线任务运行中（并发会互相覆盖预测文件），请等待当前任务完成', busy: true });
     }
-    // 锁窗口说明：toolRunning = true 到 spawn 的 'error'/'close' 事件释放之间，锁被占用
+    // 锁窗口说明：lockKey 入账到 spawn 的 'error'/'close' 事件释放之间，锁被占用
     // （毫秒级）。spawn 失败（ENOENT 等）走 'error' 事件 → done → 释放；同步异常走 catch → 释放。
     // 极端情况下锁窗口会短暂拒绝并发任务（安全侧：宁可拒绝不可并发覆盖）。
-    toolRunning = true;
     try {
       const script = toolScript(tool);
-      if (!script) { toolRunning = false; return resolve({ code: -1, stdout: '', stderr: `未知工具: ${tool}` }); }
+      if (!script) { unlockTool(lockKey); return resolve({ code: -1, stdout: '', stderr: `未知工具: ${tool}` }); }
+      const argErr = checkRunArgs(args, ROOT);
+      if (argErr) { unlockTool(lockKey); return resolve({ code: -1, stdout: '', stderr: `参数校验拒绝: ${argErr}`, badArgs: true }); }
       const env = { ...process.env };
-      const key = apiKey();
-      if (key) env.DEEPSEEK_API_KEY = key;
+      const llm = resolvedLLM();
+      // 注入生效供应商的 key（子进程 loadLLMEnv 据此解析到同款供应商与 key）；
+      // 同时显式注入 LLM_PROVIDER 防推断歧义（config 指定了供应商时强制子进程一致）
+      if (llm.keyEnv && llm.apiKey) env[llm.keyEnv] = llm.apiKey;
+      if (llm.keyEnv) env.LLM_PROVIDER = llm.provider;
+      if (STATE.model) env.LLM_MODEL = STATE.model;
       const child = spawn(process.execPath, [script, ...args], { cwd: ROOT, env, detached: process.platform !== 'win32', windowsHide: true });
       let stdout = '';
       let stderr = '';
       let settled = false;
-      const done = (r) => { if (!settled) { settled = true; toolRunning = false; clearTimeout(timer); resolve(r); } };
+      const done = (r) => { if (!settled) { settled = true; unlockTool(lockKey); clearTimeout(timer); resolve(r); } };
       const timer = setTimeout(() => {
         killTree(child);
         done({ code: -1, stdout, stderr, timedOut: true, error: `工具超时（超过 ${Math.round(TOOL_TIMEOUT_MS / 1000)}s，可用 TOOL_TIMEOUT_MS 调整）` });
@@ -232,7 +283,7 @@ function runTool(tool, args) {
       child.on('error', (e) => done({ code: -1, stdout, stderr, error: String(e) }));
     } catch (e) {
       // 同步异常（如 spawn 参数问题）：必须释放锁，否则后续所有流水线任务被永久拒绝
-      toolRunning = false;
+      unlockTool(lockKey);
       resolve({ code: -1, stdout: '', stderr: `工具启动失败: ${e.message}` });
     }
   });
@@ -467,6 +518,7 @@ async function handleApi(req, res, url) {
       config: {
         reader: pj.reader,
         model: STATE.model,
+        provider: resolvedLLM().provider,
         paths: { manuscript: pj.manuscript, canon: pj.canon, outline: pj.outline, premise: pj.premise, predDir: predDirOf(STATE.active) },
         hasApiKey: !!apiKey(),
       },
@@ -478,6 +530,23 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'GET' && url.pathname === '/api/canon-schema') {
     return sendJson(res, 200, { CANON_SECTIONS, CANON_SECTIONS_ALL });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/worldgraph') {
+    // 世界观图谱（纯函数推导）：canon → 实体关系网络 + 悬念开合 + 时间线。
+    // 文件读取走同 /api/state 的守门（读白名单），canon 缺失/损坏返回业务失败（200+ok:false）。
+    const pj = currentProject();
+    if (!pj) return sendJson(res, 404, { ok: false, error: '没有任何已配置项目（请检查 app/config.json）' });
+    const canonText = readText(pj.canon);
+    if (canonText === null) return sendJson(res, 200, { ok: false, error: `canon 文件不存在: ${pj.canon}` });
+    let canon;
+    try { canon = JSON.parse(canonText); } catch { return sendJson(res, 200, { ok: false, error: 'canon 文件无法解析为 JSON，无法生成世界图谱' }); }
+    try {
+      const graph = buildWorldGraph(canon);
+      return sendJson(res, 200, { ok: true, graph });
+    } catch (e) {
+      return sendJson(res, 200, { ok: false, error: `世界图谱生成失败: ${e.message}` });
+    }
   }
 
   if (req.method === 'POST' && url.pathname === '/api/save') {
@@ -719,20 +788,26 @@ async function handleApi(req, res, url) {
     if (!tool || !Array.isArray(args)) return sendJson(res, 400, { ok: false, error: '需要 tool 与 args' });
     const script = toolScript(tool);
     if (!script) return sendJson(res, 200, { ok: false, error: `未知工具: ${tool}` });
-    if (toolRunning) return sendJson(res, 409, { ok: false, error: '已有流水线任务运行中（并发会互相覆盖预测文件），请等待当前任务完成' });
+    const lockKey = tryLockTool();
+    if (lockKey === null) return sendJson(res, 409, { ok: false, error: '该项目已有流水线任务运行中（并发会互相覆盖预测文件），请等待当前任务完成' });
+    const argErr = checkRunArgs(args, ROOT);
+    if (argErr) { unlockTool(lockKey); return sendJson(res, 400, { ok: false, error: `参数校验拒绝: ${argErr}` }); }
     // 锁窗口说明：与 runTool 相同——spawn 的 'error'/'close' 或同步异常都会经 endTrailer/catch 释放锁
-    toolRunning = true;
     try {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' });
       const env = { ...process.env };
-      const key = apiKey();
-      if (key) env.DEEPSEEK_API_KEY = key;
+      const llm = resolvedLLM();
+      // 注入生效供应商的 key（子进程 loadLLMEnv 据此解析到同款供应商与 key）；
+      // 同时显式注入 LLM_PROVIDER 防推断歧义（config 指定了供应商时强制子进程一致）
+      if (llm.keyEnv && llm.apiKey) env[llm.keyEnv] = llm.apiKey;
+      if (llm.keyEnv) env.LLM_PROVIDER = llm.provider;
+      if (STATE.model) env.LLM_MODEL = STATE.model;
       const child = spawn(process.execPath, [script, ...args], { cwd: ROOT, env, detached: process.platform !== 'win32', windowsHide: true });
       let ended = false;
       const endTrailer = (payload) => {
         if (ended) return;
         ended = true;
-        toolRunning = false;
+        unlockTool(lockKey);
         clearTimeout(timer);
         try { res.end(payload); } catch { /* 连接已断 */ }
       };
@@ -745,18 +820,18 @@ async function handleApi(req, res, url) {
       child.on('close', (code) => endTrailer(`__RESULT__:${JSON.stringify({ code, ok: true })}\n`));
       child.on('error', (e) => endTrailer(`__RESULT__:${JSON.stringify({ code: -1, ok: false, error: String(e) })}\n`));
       // 客户端断开（关页/断网）：res 未正常 end 即 close → 终止子进程并释放锁。
-      // 否则进程继续跑到自然结束/超时，期间锁被占用、所有流水线任务被 409 拒绝
+      // 否则进程继续跑到自然结束/超时，期间锁被占用、该项目流水线任务被 409 拒绝
       res.on('close', () => {
         if (res.writableEnded || ended) return; // 正常收尾（endTrailer 已 end）不误杀
         ended = true;
-        toolRunning = false;
+        unlockTool(lockKey);
         clearTimeout(timer);
         killTree(child);
       });
       return;
     } catch (e) {
       // 同步异常（如 spawn 参数问题）：必须释放锁，否则后续所有流水线任务被永久拒绝
-      toolRunning = false;
+      unlockTool(lockKey);
       return sendJson(res, 500, { ok: false, error: `工具启动失败: ${e.message}` });
     }
   }
@@ -766,6 +841,9 @@ async function handleApi(req, res, url) {
     try { body = JSON.parse(await readBody(req)); } catch (e) { return sendJson(res, 400, { ok: false, error: `请求解析失败: ${e.message}` }); }
     const { tool, args } = body;
     if (!tool || !Array.isArray(args)) return sendJson(res, 400, { ok: false, error: '需要 tool 与 args' });
+    // args 校验在 runTool 内兜底（badArgs），这里提前校验以返回明确的 400
+    const argErr2 = checkRunArgs(args, ROOT);
+    if (argErr2) return sendJson(res, 400, { ok: false, error: `参数校验拒绝: ${argErr2}` });
     const r = await runTool(tool, args);
     return sendJson(res, 200, { ok: true, tool, args, ...r });  }
 

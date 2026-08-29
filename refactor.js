@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { loadLLMEnv } = require('./src/env');
+const { missingKeyHint } = require('./src/providers');
 const { chatTextValidated } = require('./src/llm');
 const { estimateTokens, INPUT_BUDGET_TOKENS, assertInputWithinHardLimit } = require('./src/llm');
 const { configFor, READERS } = require('./src/validate');
@@ -95,7 +96,8 @@ async function main(argv) {
   }
   effectiveReader = effectiveReader || 'genre';
   const cfg = configFor(effectiveReader);
-  const model = modelArg || process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+  const env = loadLLMEnv();
+  const model = modelArg || env.model;
 
   // ---------- dry-run ----------
   if (dryRun) {
@@ -116,9 +118,8 @@ async function main(argv) {
     process.exit(0);
   }
 
-  const env = loadLLMEnv();
   if (!env.apiKey) {
-    console.error('✗ 缺少 DEEPSEEK_API_KEY 环境变量（可读取 .dsh-home/.credentials.yaml 中的同名项注入）');
+    console.error(`✗ ${missingKeyHint(env.provider)}`);
     process.exit(2);
   }
 

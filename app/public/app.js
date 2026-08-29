@@ -506,7 +506,141 @@ function switchDash(view) {
   document.querySelectorAll('.dtab').forEach((t) => t.classList.toggle('active', t.dataset.view === view));
   $('#dash-state').classList.toggle('hidden', view !== 'state');
   $('#dash-risks').classList.toggle('hidden', view !== 'risks');
+  $('#dash-world').classList.toggle('hidden', view !== 'world');
   if (view === 'risks') refreshRisks();
+  if (view === 'world') refreshWorld();
+}
+
+// ---------- 世界观图谱面板 ----------
+// 零依赖：从 /api/worldgraph 取纯函数推导的实体关系网络，用简单力导向布局渲染 SVG。
+// 节点类型着色：character=蓝 / location=绿 / item=黄 / 其余灰；节点半径∝关联度。
+let worldGraph = null;
+let worldSelected = null;
+const WORLD_TYPE_COLOR = { character: '#4a9eff', location: '#6fcf97', item: '#e6c068' };
+const WORLD_W = 330;
+const WORLD_H = 380;
+const WORLD_STEPS = 200;
+
+// 力导向布局：斥力（全对）+ 弹力（沿边）+ 中心引力；确定性初值，少量迭代收敛即可
+function layoutWorld(graph) {
+  const nodes = graph.nodes.length ? graph.nodes : [];
+  const n = nodes.length;
+  const pos = new Array(n);
+  nodes.forEach((node, i) => {
+    const row = Math.floor(i / 4);
+    const col = i % 4;
+    pos[i] = { x: WORLD_W / 2 + ((col % 2 ? 1 : -1)) * 40, y: WORLD_H / 2 + (row - 1.5) * 55 };
+  });
+  const idx = new Map(nodes.map((node, i) => [node.id, i]));
+  const adj = new Map(nodes.map((_, i) => [i, []]));
+  for (const e of graph.edges) {
+    const a = idx.get(e.a); const b = idx.get(e.b);
+    if (a == null || b == null) continue;
+    if (!adj.get(a).includes(b)) adj.get(a).push(b);
+    if (!adj.get(b).includes(a)) adj.get(b).push(a);
+  }
+  for (let s = 0; s < WORLD_STEPS; s++) {
+    // 斥力
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const ax = pos[i].x - pos[j].x, ay = pos[i].y - pos[j].y;
+        const d2 = ax * ax + ay * ay + 1e-6;
+        const f = 900 / d2;
+        const dx = (ax / Math.sqrt(d2)) * f;
+        const dy = (ay / Math.sqrt(d2)) * f;
+        pos[i].x += dx; pos[i].y += dy;
+        pos[j].x -= dx; pos[j].y -= dy;
+      }
+    }
+    // 弹力 + 中心引力
+    for (let i = 0; i < n; i++) {
+      for (const j of adj.get(i)) {
+        if (j <= i) continue;
+        const ax = pos[j].x - pos[i].x, ay = pos[j].y - pos[i].y;
+        const d = Math.sqrt(ax * ax + ay * ay) + 1e-6;
+        const f = (d - 70) * 0.02;
+        const dx = (ax / d) * f, dy = (ay / d) * f;
+        pos[i].x += dx; pos[i].y += dy;
+        pos[j].x -= dx; pos[j].y -= dy;
+      }
+      pos[i].x += (WORLD_W / 2 - pos[i].x) * 0.01;
+      pos[i].y += (WORLD_H / 2 - pos[i].y) * 0.01;
+    }
+    // 边界钳制
+    for (const p of pos) { p.x = Math.max(18, Math.min(WORLD_W - 18, p.x)); p.y = Math.max(16, Math.min(WORLD_H - 16, p.y)); }
+  }
+  return pos;
+}
+
+function renderWorld() {
+  const canvas = $('#world-canvas');
+  const sum = $('#world-summary');
+  if (!worldGraph || !worldGraph.meta) {
+    sum.textContent = '尚无世界图谱 —— 请先配置并保存 canon';
+    canvas.innerHTML = '';
+    return;
+  }
+  const g = worldGraph;
+  sum.textContent = `${g.meta.title} · ${g.meta.nodeCount} 实体 · ${g.meta.edgeCount} 关系` +
+    (g.meta.openSuspense ? ` · ${g.meta.openSuspense} 悬念未收` : '');
+  const pos = layoutWorld(g);
+  const idx = new Map(g.nodes.map((node, i) => [node.id, i]));
+  const neighbor = (id) => {
+    const set = new Set();
+    for (const e of g.edges) {
+      if (e.a === id) set.add(e.b);
+      if (e.b === id) set.add(e.a);
+    }
+    return set;
+  };
+  let edgeSvg = '';
+  for (const e of g.edges) {
+    const pa = idx.get(e.a), pb = idx.get(e.b);
+    if (pa == null || pb == null) continue;
+    const active = !worldSelected || worldSelected === e.a || worldSelected === e.b;
+    const op = active ? 0.4 : 0.08;
+    edgeSvg += `<line x1="${pos[pa].x.toFixed(1)}" y1="${pos[pa].y.toFixed(1)}" x2="${pos[pb].x.toFixed(1)}" y2="${pos[pb].y.toFixed(1)}" stroke="#6b6b6b" stroke-width="${Math.min(1 + e.count * 0.8, 4)}" opacity="${op}" />`;
+  }
+  let nodeSvg = '';
+  for (let i = 0; i < g.nodes.length; i++) {
+    const node = g.nodes[i];
+    const color = WORLD_TYPE_COLOR[node.type] || '#9d9d9d';
+    const r = Math.max(6, Math.min(7 + node.degree * 2, 14));
+    const nb = neighbor(node.id);
+    const connected = worldSelected === node.id || (worldSelected && nb.has(worldSelected));
+    const dim = worldSelected && !connected;
+    nodeSvg += `<g class="w-node" data-id="${escapeHtml(node.id)}" style="cursor:pointer" opacity="${dim ? 0.25 : 1}">
+      <circle cx="${pos[i].x.toFixed(1)}" cy="${pos[i].y.toFixed(1)}" r="${r}" fill="${worldSelected === node.id ? '#fff' : color}" stroke="#111" stroke-width="1.5" />
+      <text x="${pos[i].x.toFixed(1)}" y="${(pos[i].y + 22).toFixed(1)}" text-anchor="middle" font-size="9" fill="#ddd" title="${escapeHtml(node.name)}">${escapeHtml(node.name)}</text>
+    </g>`;
+  }
+  canvas.innerHTML = `<svg width="${WORLD_W}" height="${WORLD_H}" viewBox="0 0 ${WORLD_W} ${WORLD_H}" xmlns="http://www.w3.org/2000/svg">${edgeSvg}${nodeSvg}</svg>`;
+  canvas.querySelectorAll('.w-node').forEach((gEl) => {
+    gEl.addEventListener('click', () => {
+      worldSelected = worldSelected === gEl.dataset.id ? null : gEl.dataset.id;
+      renderWorld();
+    });
+  });
+  // 悬念台账
+  const susp = $('#world-suspense');
+  if (asArray(g.suspense).length) {
+    susp.innerHTML = '<div class="world-h">悬念台账（' + asArray(g.suspense).length + '）</div>' + asArray(g.suspense).slice(0, 20).map((s) => {
+      const st = s.status === 'resolved' ? '✓ 已回收' : (s.status === 'planned' ? '… 未到期' : '⚠ 未收');
+      const stc = s.status === 'resolved' ? 'var(--ok)' : (s.status === 'planned' ? 'var(--info)' : 'var(--warning)');
+      const detail = s.resolved != null ? '第' + s.resolved + '章回收' : '预计第' + (s.expected == null ? '?' : s.expected) + '章';
+      return `<div class="dash-row"><span class="k" style="color:${stc}">${st}</span><span class="v">${escapeHtml(s.name)} · ${detail}</span></div>`;
+    }).join('');
+  } else {
+    susp.innerHTML = '<div class="empty">无悬念</div>';
+  }
+  $('#world-refresh').onclick = refreshWorld;
+}
+
+async function refreshWorld() {
+  const d = await api('/api/worldgraph');
+  if (!d.ok) { log('✗ 世界观图谱加载失败: ' + (d.error || '未知错误')); return; }
+  worldGraph = d.graph;
+  renderWorld();
 }
 
 // ---------- AI 面板（流式） ----------

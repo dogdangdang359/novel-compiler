@@ -12,6 +12,7 @@ const { estimateTokens, INPUT_BUDGET_TOKENS, assertInputWithinHardLimit } = requ
 const { buildSimulatePrompt } = require('./src/prompts');
 const { validateCanon, configFor, READERS } = require('./src/validate');
 const { loadLLMEnv } = require('./src/env');
+const { missingKeyHint } = require('./src/providers');
 const { loadWjrc, applyWjrc } = require('./src/wjrc');
 const { atomicWrite, acquireFileLocks, checkFileLocked } = require('./src/fsutil');
 const { VERSION } = require('./src/version');
@@ -159,7 +160,7 @@ async function main(argv) {
 
   const env = loadLLMEnv();
   if (!env.apiKey) {
-    console.error('✗ 缺少 DEEPSEEK_API_KEY 环境变量（可读取 .dsh-home/.credentials.yaml 中的同名项注入）');
+    console.error(`✗ ${missingKeyHint(env.provider)}`);
     process.exit(2);
   }
   const model = modelArg || env.model;

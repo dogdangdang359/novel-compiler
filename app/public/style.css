@@ -210,6 +210,11 @@ body.mode-creator .logo-sub { display: none; }
 .dash-row.warn .v { color: var(--warning); }
 .empty { color: var(--fg-dim); padding: 6px; font-size: 12px; }
 
+/* 世界观图谱 */
+#world-canvas { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
+#world-canvas svg { display: block; }
+.world-h { color: var(--fg-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 6px; margin-bottom: 2px; }
+
 /* 中间编辑器 */
 #editor-wrap { min-width: 0; background: var(--bg); }
 #editor { width: 100%; height: 100%; }

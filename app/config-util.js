@@ -37,11 +37,13 @@ function parseConfig(raw, appDir, rootDir) {
   // 损坏 config：不静默给默认项目（掩盖损坏——用户以为 IDE 出问题）——
   // 返回空项目集 + parseError 标记，由启动方打印明确警告
   if (parseError) {
-    return { model: 'deepseek-chat', apiKey: null, active: null, projects: [], parseError };
+    return { model: 'deepseek-chat', apiKey: null, provider: null, active: null, projects: [], parseError };
   }
   cfg = cfg || {}; // raw 为 null（读失败）时按空配置处理，不崩溃
   const model = cfg.model || 'deepseek-chat';
   const apiKey = cfg.apiKey || null;
+  // provider：显式指定的 LLM 供应商（缺省 null → 由 providers 适配层自动推断/回退 deepseek）
+  const provider = (typeof cfg.provider === 'string' && cfg.provider) || null;
   const resolve = (v, def) => (v ? path.resolve(appDir, v) : path.resolve(rootDir, def));
 
   let projects;
@@ -77,7 +79,7 @@ function parseConfig(raw, appDir, rootDir) {
     }];
     active = title;
   }
-  return { model, apiKey, active, projects, parseError: null };
+  return { model, apiKey, provider, active, projects, parseError: null };
 }
 
 /**
@@ -93,6 +95,7 @@ function setActiveInConfig(raw, projectId) {
     cfg = {
       model: cfg.model || 'deepseek-chat',
       apiKey: cfg.apiKey || null,
+      provider: cfg.provider || null,
       activeProject: projectId,
       projects: {
         [projectId]: {
@@ -146,7 +149,7 @@ function addProjectInConfig(raw, project, appDir) {
       } catch { /* canon 不可读时保持默认 */ }
     }
     if (isReservedKey(oldTitle)) oldTitle = '默认项目'; // canon 标题撞保留字：不能当 projects key
-    cfg = { model: cfg.model || 'deepseek-chat', apiKey: cfg.apiKey || null, activeProject: project.id, projects: {} };
+    cfg = { model: cfg.model || 'deepseek-chat', apiKey: cfg.apiKey || null, provider: cfg.provider || null, activeProject: project.id, projects: {} };
     cfg.projects[oldTitle] = oldFields;
   }
   // 重名拒绝：覆盖会静默丢掉既有项目的全部文件指针（数据丢失）。服务器层的 409 检查基于
@@ -185,7 +188,7 @@ function setProjectPathInConfig(raw, projectId, file, relPath) {
       premise: cfg.premise,
       reader: cfg.reader || DEFAULT_READER,
     };
-    cfg = { model: cfg.model || 'deepseek-chat', apiKey: cfg.apiKey || null, activeProject: projectId, projects: {} };
+    cfg = { model: cfg.model || 'deepseek-chat', apiKey: cfg.apiKey || null, provider: cfg.provider || null, activeProject: projectId, projects: {} };
     cfg.projects[projectId] = oldFields;
   }
   if (isReservedKey(projectId)) throw new Error(`项目名称不能使用保留字: ${projectId}`);

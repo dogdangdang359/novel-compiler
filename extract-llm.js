@@ -10,6 +10,7 @@ const path = require('path');
 const { chatJSONValidated } = require('./src/llm');
 const { estimateTokens, INPUT_BUDGET_TOKENS, HARD_INPUT_LIMIT, assertInputWithinHardLimit } = require('./src/llm');
 const { loadLLMEnv } = require('./src/env');
+const { missingKeyHint } = require('./src/providers');
 const { validateCanon, configFor, READERS } = require('./src/validate');
 const { buildExtractPrompt, validateExtraction, summarizeChanges, purgeStale, planExtractionChunks } = require('./src/extraction');
 const { chapterHashes, dirtyChapters, mergeCanon, mergeEvidence, mergeOutputHashes } = require('./src/incremental');
@@ -400,7 +401,7 @@ async function main(argv) {
 
   const env = loadLLMEnv();
   if (!env.apiKey) {
-    console.error('✗ 缺少 DEEPSEEK_API_KEY 环境变量（可读取 .dsh-home/.credentials.yaml 中的同名项注入）');
+    console.error(`✗ ${missingKeyHint(env.provider)}`);
     process.exit(2);
   }
   const model = modelArg || env.model;

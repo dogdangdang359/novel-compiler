@@ -4534,6 +4534,126 @@ try {
       sectionsUsed.every((s) => CANON_SECTIONS_ALL.includes(s)), '');
   }
 
+  console.log('场景 62: LLM 供应商适配层（多供应商解析/自动推断/未知拒绝/config 透传）');
+  {
+    const { providerIds, isKnownProvider, resolveProviderId, resolveProvider, missingKeyHint, DEFAULT_PROVIDER, PROVIDERS } = require('../src/providers');
+
+    // ① 注册表完整性
+    check('deepseek 为默认供应商', DEFAULT_PROVIDER === 'deepseek', DEFAULT_PROVIDER);
+    check('注册表含全部主流供应商', ['deepseek', 'openai', 'moonshot', 'qwen', 'zhipu', 'ollama'].every((p) => isKnownProvider(p)), providerIds().join(','));
+    check('供应商均有 baseUrl 与 defaultModel', providerIds().every((p) => PROVIDERS[p].baseUrl && PROVIDERS[p].defaultModel), '');
+    check('供应商 id 均为已知', providerIds().every((p) => isKnownProvider(p)), '');
+
+    // ② 显式指定已知供应商
+    const r1 = resolveProvider({ provider: 'moonshot', env: {} });
+    check('显式指定 moonshot 生效', r1.provider === 'moonshot' && r1.baseUrl === 'https://api.moonshot.cn/v1', `${r1.provider} ${r1.baseUrl}`);
+    check('moonshot 默认模型', r1.model === 'moonshot-v1-8k', r1.model);
+
+    // ③ 显式指定未知供应商 → 抛错（不静默回退）
+    let ue = null;
+    try { resolveProvider({ provider: 'huggingface', env: {} }); } catch (e) { ue = e; }
+    check('未知 provider 显式指定抛错（不静默回退）', ue && ue.code === 'UNKNOWN_PROVIDER', ue ? ue.message : 'no error');
+    let ue2 = null;
+    try { resolveProviderId({ LLM_PROVIDER: 'nope' }); } catch (e) { ue2 = e; }
+    check('未知 LLM_PROVIDER 抛错', ue2 && ue2.code === 'UNKNOWN_PROVIDER', ue2 ? ue2.message : 'no error');
+
+    // ④ 未显式指定：依赖自动推断（谁有 key 用谁）
+    const infOpenai = resolveProviderId({ OPENAI_API_KEY: 'sk-x' });
+    check('有 key 自动推断供应商（openai）', infOpenai.provider === 'openai', infOpenai.provider);
+    const infDeep = resolveProviderId({});
+    check('无 key 默认回退 deepseek', infDeep.provider === 'deepseek', infDeep.provider);
+    // 显式 LLM_PROVIDER 优先于 key 推断
+    const infExplicit = resolveProviderId({ LLM_PROVIDER: 'qwen', MOONSHOT_API_KEY: 'k' });
+    check('显式 LLM_PROVIDER 优先于 key 推断', infExplicit.provider === 'qwen', infExplicit.provider);
+
+    // ⑤ deepseek 向后兼容：DEEPSEEK_MODEL/DEEPSEEK_BASE_URL 覆盖
+    const rd = resolveProvider({ env: { DEEPSEEK_MODEL: 'deepseek-coder', DEEPSEEK_BASE_URL: 'https://apix.deepseek.com', DEEPSEEK_API_KEY: 'k' } });
+    check('DEEPSEEK_MODEL 覆盖默认模型', rd.model === 'deepseek-coder', rd.model);
+    check('DEEPSEEK_BASE_URL 覆盖 baseUrl', rd.baseUrl === 'https://apix.deepseek.com', rd.baseUrl);
+    check('DEEPSEEK_API_KEY 作为 key', rd.apiKey === 'k', String(rd.apiKey));
+
+    // ⑥ 通用覆盖：LLM_BASE_URL / LLM_MODEL / LLM_API_KEY 对任意供应商生效
+    const rg = resolveProvider({ provider: 'zhipu', env: { LLM_BASE_URL: 'https://proxy.example.org/v1', LLM_MODEL: 'glm-custom', LLM_API_KEY: 'gk' } });
+    check('LLM_* 通用覆盖（baseUrl）', rg.baseUrl === 'https://proxy.example.org/v1', rg.baseUrl);
+    check('LLM_* 通用覆盖（model）', rg.model === 'glm-custom', rg.model);
+    check('LLM_* 通用覆盖（apiKey）', rg.apiKey === 'gk', String(rg.apiKey));
+
+    // ⑦ ollama 无鉴权：apiKey 为 null（未显式提供时）
+    const ro = resolveProvider({ provider: 'ollama', env: {} });
+    check('ollama 默认无 apiKey', ro.apiKey === null, String(ro.apiKey));
+    check('ollama jsonMode=false（走 format=json 而非 response_format）', ro.jsonMode === false, String(ro.jsonMode));
+
+    // ⑧ missingKeyHint 随供应商定制
+    const hk = missingKeyHint('moonshot');
+    check('缺失 key 提示含对应环境变量名', hk.includes('MOONSHOT_API_KEY'), hk);
+    const hko = missingKeyHint('ollama');
+    check('ollama 缺失配置提示不含 key', !hko.includes('_API_KEY'), hko);
+
+    // ⑨ env.js loadLLMEnv 结构兼容（返回 apiKey/baseUrl/model/provider）
+    const { loadLLMEnv } = require('../src/env');
+    const el = loadLLMEnv({ provider: 'openai', apiKey: 'ek' });
+    check('loadLLMEnv 返回结构兼容', el.apiKey === 'ek' && el.model && el.baseUrl && el.provider === 'openai', JSON.stringify(el));
+  }
+
+  console.log('场景 63: 世界观图谱推导（canon → 实体关系网络/悬念/时间线）');
+  {
+    const { buildWorldGraph, chapterSpanFor } = require('../src/worldgraph');
+    const ex = require('../examples/canon.json');
+
+    // ① 示例 canon：节点/边/悬念/时间线
+    const g = buildWorldGraph(ex);
+    check('示例 canon 实体节点数=12', g.meta.nodeCount === 12, String(g.meta.nodeCount));
+    check('示例 canon 关系边数=5', g.meta.edgeCount === 5, String(g.meta.edgeCount));
+    check('示例 canon 悬念全已回收（openSuspense=0）', g.meta.openSuspense === 0, String(g.meta.openSuspense));
+    const shen = g.nodes.find((n) => n.id === 'shen_nanzhi');
+    check('中心角色（沈南枝）关联度最高', shen && shen.degree === 4, shen ? String(shen.degree) : 'missing');
+    check('时间线按章节排序并解析地点名', g.timeline.map((t) => `${t.chapter}:${t.locationName}`).join(',') === '1:山神庙,2:山神庙,3:青云山,4:后山禁地', g.timeline.map((t) => t.locationName).join(','));
+    // 孤立实体（无 knowledge 关联）仍保留为节点，degree=0
+    const isolated = g.nodes.filter((n) => n.degree === 0).map((n) => n.type);
+    check('孤立地点/物品保留（degree=0）', isolated.includes('location') && isolated.includes('item'), isolated.join(','));
+
+    // ② 手搓 canon：覆盖 open/planned 悬念 + 多 holder 演化 + 缺字段兜底
+    const handmade = {
+      meta: { title: '测试世界' },
+      entities: [
+        { id: 'a', name: '主角', type: 'character', appears_from_chapter: 1 },
+        { id: 'b', name: '配角', type: 'character', appears_from_chapter: 1 },
+        { id: 'c', name: '地点1', type: 'location', appears_from_chapter: 2 },
+      ],
+      knowledge: [
+        { id: 'k1', name: '甲乙相识', holders: ['a', 'b'], known_from_chapter: 1 },
+        { id: 'k2', name: '甲乙同往地点', holders: ['a', 'b', 'c'], known_from_chapter: 2 },
+      ],
+      suspense: [
+        { id: 's1', name: '主角身世', planted_in_chapter: 1, expected_resolve_chapter: 5 },
+        { id: 's2', name: '已解之秘', planted_in_chapter: 1, expected_resolve_chapter: 3, resolved_in_chapter: 3 },
+      ],
+      timeline: [
+        { chapter: 1, day: 1, location: 'loc1' },
+        { chapter: 3, day: 2, location: 'c' },
+      ],
+    };
+    const h = buildWorldGraph(handmade);
+    check('手搓 canon：abc 三者两两成边（共 3 条）', h.meta.edgeCount === 3, String(h.meta.edgeCount));
+    check('多 holder 共现 count 累加（a~b 两条知识→count2）', h.edges.some((e) => (e.a === 'a' && e.b === 'b') && e.count === 2), JSON.stringify(h.edges));
+    const sOpen = h.suspense.find((s) => s.id === 's1');
+    const sRes = h.suspense.find((s) => s.id === 's2');
+    check('未到期悬念归为 planned', sOpen && sOpen.status === 'planned', sOpen && sOpen.status);
+    check('已回收悬念归为 resolved', sRes && sRes.status === 'resolved', sRes && sRes.status);
+    check('openSuspense 统计（planned 不计入 open）', h.meta.openSuspense === 0, String(h.meta.openSuspense));
+    // 陈旧命名：预留/开放可共存——handmade 无 genuinely-open（expected==planted 需 expected<=planted）
+    const withOpen = buildWorldGraph({ ...handmade, suspense: [{ id: 's3', name: '遗留悬念', planted_in_chapter: 1, expected_resolve_chapter: 1 }] });
+    check('expected<=planted 归为 open（历史遗留未收）', withOpen.suspense.find((s) => s.id === 's3').status === 'open', '');
+    check('openSuspense=1（仅 open 计入）', withOpen.meta.openSuspense === 1, String(withOpen.meta.openSuspense));
+
+    // ③ 缺失字段兜底：无 entities/knowledge/timeline 的裸 canon 不崩溃
+    const bare = buildWorldGraph({ meta: {} });
+    check('空 canon 不崩溃（0 节点/0 边）', bare.meta.nodeCount === 0 && bare.meta.edgeCount === 0, JSON.stringify(bare.meta));
+    // chapterSpanFor 缺字段兜底
+    const cs = chapterSpanFor('ghost', { entities: [], knowledge: [{ id: 'k', holders: ['ghost'], known_from_chapter: 7 }] });
+    check('chapterSpanFor 从 knowledge 兜底起始章', Array.isArray(cs) && cs[0] === 7, JSON.stringify(cs));
+  }
+
   // README 断言数快照一致性（发布 checklist：测试变更后必须同步 README 的断言数）
   const readmeAssert = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8').match(/冒烟测试（(\d+) 项断言）/);
   check(`README 断言数快照一致（README=${readmeAssert ? readmeAssert[1] : '?'} · 实际含本断言=${pass + 1}）`,
