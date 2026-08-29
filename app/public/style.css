@@ -215,6 +215,22 @@ body.mode-creator .logo-sub { display: none; }
 #world-canvas svg { display: block; }
 .world-h { color: var(--fg-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 6px; margin-bottom: 2px; }
 
+/* 剧情健康度雷达舱 */
+#health-scorecard { display: flex; gap: 12px; align-items: flex-start; padding: 8px 6px; }
+.health-score-big { font-size: 34px; font-weight: 700; line-height: 1; white-space: nowrap; }
+.health-score-of { font-size: 13px; font-weight: 400; color: var(--fg-dim); }
+.health-verdict { display: block; font-size: 10px; font-weight: 400; color: var(--fg-dim); margin-top: 2px; }
+.health-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; }
+.health-metric { background: var(--panel2); border: 1px solid var(--border); border-radius: 3px; padding: 6px 8px; text-align: center; }
+.health-metric b { display: block; font-size: 16px; }
+.health-metric span { color: var(--fg-dim); font-size: 10px; }
+#health-radar { display: flex; justify-content: center; padding: 2px 0 8px; }
+#health-radar svg { max-width: 100%; height: auto; }
+.health-charts-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.health-chart { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 6px; margin-bottom: 8px; flex: 1 1 300px; }
+.health-chart-title { color: var(--fg-dim); font-size: 11px; margin-bottom: 4px; }
+.health-chart svg { display: block; }
+
 /* 中间编辑器 */
 #editor-wrap { min-width: 0; background: var(--bg); }
 #editor { width: 100%; height: 100%; }

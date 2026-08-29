@@ -20,6 +20,7 @@ const { CANON_SECTIONS, CANON_SECTIONS_ALL, asArray } = require('../src/canon');
 const { validateParams } = require('../src/validate-params');
 const { resolveProvider } = require('../src/providers');
 const { buildWorldGraph } = require('../src/worldgraph');
+const { buildHealthReport } = require('../src/health');
 
 const APP = __dirname;
 const ROOT = path.join(APP, '..');
@@ -546,6 +547,23 @@ async function handleApi(req, res, url) {
       return sendJson(res, 200, { ok: true, graph });
     } catch (e) {
       return sendJson(res, 200, { ok: false, error: `世界图谱生成失败: ${e.message}` });
+    }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/health') {
+    // 剧情健康度雷达舱（纯函数推导）：canon → 结构记分卡 + 六维雷达 + 警戒清单。
+    // 同 worldgraph：canon 缺失/损坏返回业务失败（200+ok:false）。
+    const pj = currentProject();
+    if (!pj) return sendJson(res, 404, { ok: false, error: '没有任何已配置项目（请检查 app/config.json）' });
+    const canonText = readText(pj.canon);
+    if (canonText === null) return sendJson(res, 200, { ok: false, error: `canon 文件不存在: ${pj.canon}` });
+    let canon;
+    try { canon = JSON.parse(canonText); } catch { return sendJson(res, 200, { ok: false, error: 'canon 文件无法解析为 JSON，无法生成健康度报告' }); }
+    try {
+      const report = buildHealthReport(canon);
+      return sendJson(res, 200, { ok: true, report });
+    } catch (e) {
+      return sendJson(res, 200, { ok: false, error: `健康度报告生成失败: ${e.message}` });
     }
   }
 

@@ -507,8 +507,10 @@ function switchDash(view) {
   $('#dash-state').classList.toggle('hidden', view !== 'state');
   $('#dash-risks').classList.toggle('hidden', view !== 'risks');
   $('#dash-world').classList.toggle('hidden', view !== 'world');
+  $('#dash-health').classList.toggle('hidden', view !== 'health');
   if (view === 'risks') refreshRisks();
   if (view === 'world') refreshWorld();
+  if (view === 'health') refreshHealth();
 }
 
 // ---------- 世界观图谱面板 ----------
@@ -641,6 +643,118 @@ async function refreshWorld() {
   if (!d.ok) { log('✗ 世界观图谱加载失败: ' + (d.error || '未知错误')); return; }
   worldGraph = d.graph;
   renderWorld();
+}
+
+// ---------- 剧情健康度雷达舱面板 ----------
+// 零依赖：从 /api/health 取纯函数推导的结构记分卡，渲染综合评分 + 六维雷达 + 逐章曲线 + 警戒清单。
+let healthReport = null;
+const HEALTH_DIM_LABEL = {
+  resolve: '悬念回收', overdue: '无过期未收', inFlight: '悬念可溯',
+  cast: '角色聚集', world: '世界观铺陈', coverage: '时间线覆盖',
+};
+const HEALTH_R = 74;
+const HEALTH_CX = 92;
+const HEALTH_CY = 92;
+
+function healthRadar(dim) {
+  const keys = Object.keys(HEALTH_DIM_LABEL);
+  const n = keys.length;
+  const pt = (i, r) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    return [HEALTH_CX + r * Math.cos(a), HEALTH_CY + r * Math.sin(a)];
+  };
+  let grid = '';
+  for (let g = 1; g <= 4; g++) {
+    grid += '<polygon points="' + keys.map((_, i) => pt(i, (HEALTH_R * g) / 4).map((v) => v.toFixed(1)).join(',')).join(' ') + '" fill="none" stroke="#333" stroke-width="1" />';
+  }
+  for (let i = 0; i < n; i++) {
+    const [x, y] = pt(i, HEALTH_R);
+    grid += `<line x1="${HEALTH_CX}" y1="${HEALTH_CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#2b2b2b" />`;
+  }
+  let axis = '';
+  keys.forEach((k, i) => {
+    const [x, y] = pt(i, HEALTH_R + 15);
+    axis += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa">${HEALTH_DIM_LABEL[k]}</text>`;
+  });
+  const val = keys.map((k) => Math.max(0.02, Math.min(1, dim[k] || 0)));
+  const fill = keys.map((k, i) => pt(i, val[i] * HEALTH_R).map((v) => v.toFixed(1)).join(',')).join(' ');
+  return `<svg width="${HEALTH_CX * 2}" height="${HEALTH_CY * 2}" viewBox="0 0 ${HEALTH_CX * 2} ${HEALTH_CY * 2}" xmlns="http://www.w3.org/2000/svg">
+    ${grid}${axis}<polygon points="${fill}" fill="rgba(55,148,255,0.35)" stroke="#3794ff" stroke-width="1.6" /></svg>`;
+}
+
+function healthLine(series, key, color, label) {
+  const W = 300, H = 64, PL = 30, PR = 8, PT = 8, PB = 14;
+  const dy = series.map((p) => p[key]);
+  const n = series.length;
+  const x0 = PL, x1 = W - PR - x0;
+  const y0 = PT, y1 = H - PB;
+  const maxV = Math.max.apply(null, dy.concat([1]));
+  const minV = Math.min.apply(null, dy.concat([0]));
+  const px = (i) => x0 + (n <= 1 ? (x1 - x0) / 2 : (i * (x1 - x0)) / (n - 1));
+  const py = (v) => y1 - ((v - minV) * (y1 - y0)) / Math.max(1, maxV - minV);
+  let path = dy.map((v, i) => (i ? 'L' : 'M') + px(i).toFixed(1) + ' ' + py(v).toFixed(1)).join(' ');
+  let dots = '';
+  series.forEach((p, i) => {
+    dots += `<circle cx="${px(i).toFixed(1)}" cy="${py(p[key]).toFixed(1)}" r="2" fill="${color}" />`;
+    if (p[key] != null) dots += `<text x="${px(i).toFixed(1)}" y="${(py(p[key]) - 3).toFixed(1)}" text-anchor="middle" font-size="7" fill="${color}">${p[key]}</text>`;
+  });
+  let axis = '';
+  for (let i = 0; i < n; i++) axis += `<text x="${px(i).toFixed(1)}" y="${H - 2}" text-anchor="middle" font-size="7" fill="#777">${series[i].chapter}</text>`;
+  return `<div class="health-chart"><div class="health-chart-title">${label}</div><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}" stroke="#333" />
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="1.6" />${dots}${axis}</svg></div>`;
+}
+
+function renderHealth() {
+  if (!healthReport || !healthReport.meta) {
+    $('#health-summary').textContent = '尚无健康度报告 —— 请先配置并保存 canon';
+    ['health-scorecard', 'health-radar', 'health-charts', 'health-issues'].forEach((id) => { $('#' + id).innerHTML = ''; });
+    return;
+  }
+  const h = healthReport;
+  const m = h.meta, s = h.suspense;
+  const scoreColor = m.score >= 70 ? 'var(--ok)' : m.score >= 50 ? 'var(--warning)' : 'var(--error)';
+  $('#health-summary').textContent = `${m.title} · 健康度 ${m.score}/100（${m.verdict}） · ${m.chapterCount} 章 · ${m.suspenseCount} 悬念 · ${m.entityCount} 实体`;
+  // 综合评分卡 + 核心指标
+  const dimV = m.dimensions;
+  const scoreCard = `<div class="health-score-big" style="color:${scoreColor}">${m.score}<span class="health-score-of">/100</span><span class="health-verdict">${m.verdict}</span></div>
+    <div class="health-metrics">
+      <div class="health-metric"><b>${Math.round(s.resolveRate * 100)}%</b><span>悬念回收率</span></div>
+      <div class="health-metric"><b>${s.overdue}</b><span>过期未收</span></div>
+      <div class="health-metric"><b>${s.inflight}</b><span>在飞悬念</span></div>
+      <div class="health-metric"><b>${s.dangling}</b><span>无落点悬置</span></div>
+      <div class="health-metric"><b>${h.curves.backlogPeak}</b><span>峰值堆积</span></div>
+      <div class="health-metric"><b>${s.avgResolutionLag}</b><span>平均回收章差</span></div>
+    </div>`;
+  $('#health-scorecard').innerHTML = scoreCard;
+  $('#health-radar').innerHTML = healthRadar(dimV);
+  // 逐章图表：悬念堆积 + 回收率堆叠 + 实体密度 + 世界观展开
+  const chs = h.chapters.length ? h.chapters : [];
+  const cm = h.chapters.length;
+  let charts = '';
+  if (cm) {
+    charts = '<div class="world-h">逐章节奏（横轴为章节号）</div>' +
+      `<div class="health-charts-row">${healthLine(chs, 'backlog', '#e6c068', '悬念堆积（未收净量）')}</div>` +
+      `<div class="health-charts-row">${healthLine(chs, 'activeEntities', '#4a9eff', '活跃实体累计')}${healthLine(chs, 'newKnowledge', '#6fcf97', '每章新知')}</div>`;
+  }
+  $('#health-charts').innerHTML = charts;
+  // 警戒清单
+  const issues = h.issues || [];
+  $('#health-issues').innerHTML = issues.length
+    ? '<div class="world-h">警戒清单（' + issues.length + '）</div>' + issues.map((it) => {
+        const ic = it.level === 'warn' ? 'var(--warning)' : 'var(--info)';
+        const tag = it.level === 'warn' ? '⚠' : 'ℹ';
+        return `<div class="dash-row"><span class="k" style="color:${ic}">${tag}</span><span class="v">${escapeHtml(it.text)}</span></div>`;
+      }).join('')
+    : '<div class="world-h">警戒清单</div><div class="empty">剧情结构健康，暂无警戒项</div>';
+  $('#health-refresh').onclick = refreshHealth;
+}
+
+async function refreshHealth() {
+  const d = await api('/api/health');
+  if (!d.ok) { log('✗ 健康度加载失败: ' + (d.error || '未知错误')); return; }
+  healthReport = d.report;
+  renderHealth();
 }
 
 // ---------- AI 面板（流式） ----------

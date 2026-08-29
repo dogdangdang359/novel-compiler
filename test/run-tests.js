@@ -4654,6 +4654,63 @@ try {
     check('chapterSpanFor 从 knowledge 兜底起始章', Array.isArray(cs) && cs[0] === 7, JSON.stringify(cs));
   }
 
+  console.log('场景 64: 剧情健康度雷达舱（canon → 评分/六维雷达/逐章序列/警戒清单）');
+  {
+    const { buildHealthReport } = require('../src/health');
+    const ex = require('../examples/canon.json');
+
+    // ① 示例 canon：结构健康样本
+    const g = buildHealthReport(ex);
+    check('示例 canon 健康度评分=98', g.meta.score === 98, String(g.meta.score));
+    check('示例 canon 判定=优秀', g.meta.verdict === '优秀', g.meta.verdict);
+    check('示例 canon 回收率=100%', g.suspense.resolveRate === 1, String(g.suspense.resolveRate));
+    check('示例 canon 零过期/零悬空', g.suspense.overdue === 0 && g.suspense.dangling === 0, JSON.stringify(g.suspense));
+    check('示例 canon 平均回收章差=2', g.suspense.avgResolutionLag === 2, String(g.suspense.avgResolutionLag));
+    check('示例 canon 逐章数=4（span 1..4）', g.chapters.length === 4 && g.span[0] === 1 && g.span[1] === 4, JSON.stringify(g.span));
+    check('示例 canon 堆积峰值=2（第2章）', g.curves.backlogPeak === 2 && g.curves.backlogPeakAt === 1, JSON.stringify(g.curves));
+    check('示例 canon 覆盖/聚集/铺陈维度=1', g.meta.dimensions.coverage === 1 && g.meta.dimensions.cast === 1 && g.meta.dimensions.world > 0.8, JSON.stringify(g.meta.dimensions));
+    check('示例 canon 无警戒项', Array.isArray(g.issues) && g.issues.length === 0, JSON.stringify(g.issues));
+
+    // ② 问题样本：过期/悬空/在飞齐全 + 时间线断档 + 未全回收
+    const p = buildHealthReport({
+      meta: { title: '问题世界' },
+      entities: [
+        { id: 'a', type: 'character', appears_from_chapter: 1 },
+        { id: 'b', type: 'character', appears_from_chapter: 1 },
+        { id: 'locX', type: 'location', appears_from_chapter: 1 },
+      ],
+      knowledge: [
+        { id: 'k1', holders: ['a', 'b'], known_from_chapter: 1 },
+        { id: 'k2', holders: ['a'], known_from_chapter: 1 },
+      ],
+      suspense: [
+        { id: 's1', name: '过期悬念', planted_in_chapter: 1, expected_resolve_chapter: 1 },
+        { id: 's2', name: '悬空悬念', planted_in_chapter: 1 },
+        { id: 's3', name: '在飞悬念', planted_in_chapter: 1, expected_resolve_chapter: 5 },
+        { id: 's4', name: '已解1', planted_in_chapter: 1, expected_resolve_chapter: 2, resolved_in_chapter: 2 },
+        { id: 's5', name: '已解2', planted_in_chapter: 2, expected_resolve_chapter: 3, resolved_in_chapter: 3 },
+      ],
+      timeline: [
+        { chapter: 1, location: 'locX' },
+        { chapter: 4, location: 'locX' },
+      ],
+    });
+    check('问题样本 悬念分类（2收/1过期/1在飞/1悬空）', p.suspense.resolved === 2 && p.suspense.overdue === 1 && p.suspense.inflight === 1 && p.suspense.dangling === 1, JSON.stringify(p.suspense));
+    check('问题样本 回收率=40%', p.suspense.resolveRate === 0.4, String(p.suspense.resolveRate));
+    check('问题样本 章节跨度含预期落点（span 1..5）', p.chapters.length === 5 && p.span[1] === 5, JSON.stringify(p.span));
+    check('问题样本 堆积峰值=4', p.curves.backlogPeak === 4, String(p.curves.backlogPeak));
+    check('问题样本 时间线覆盖=0.4（2/5）', p.meta.dimensions.coverage === 0.4, String(p.meta.dimensions.coverage));
+    check('问题样本 评分=54 · 判定=需打磨', p.meta.score === 54 && p.meta.verdict === '需打磨', p.meta.score + '/' + p.meta.verdict);
+    check('问题样本 警戒 4 类（过期/悬空/断档/未收）', p.issues.map((i) => i.code).join(',') === 'overdue-suspense,dangling-suspense,timeline-gap,unresolved', p.issues.map((i) => i.code).join(','));
+    check('问题样本 过期警戒为 warn 级', p.issues.some((i) => i.code === 'overdue-suspense' && i.level === 'warn'), JSON.stringify(p.issues));
+
+    // ③ 裸 canon 兜底：空世界不崩溃
+    const bare = buildHealthReport({ meta: {} });
+    check('空 canon 章节=1 且无悬念', bare.meta.chapterCount === 1 && bare.suspense.total === 0, JSON.stringify(bare.meta));
+    check('空 canon 评分=25 · 判定=需大修', bare.meta.score === 25 && bare.meta.verdict === '需大修', bare.meta.score + '/' + bare.meta.verdict);
+    check('空 canon 列 no-suspense 警戒', bare.issues.some((i) => i.code === 'no-suspense'), JSON.stringify(bare.issues));
+  }
+
   // README 断言数快照一致性（发布 checklist：测试变更后必须同步 README 的断言数）
   const readmeAssert = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8').match(/冒烟测试（(\d+) 项断言）/);
   check(`README 断言数快照一致（README=${readmeAssert ? readmeAssert[1] : '?'} · 实际含本断言=${pass + 1}）`,
