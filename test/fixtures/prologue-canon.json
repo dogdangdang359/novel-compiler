@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "title": "信与钟",
+    "target_reader": "genre",
+    "genre": "悬疑短篇"
+  },
+  "entities": [
+    { "id": "shen_mo", "name": "沈默", "aliases": [], "type": "character" },
+    { "id": "lin_wan", "name": "林晚", "aliases": [], "type": "character" },
+    { "id": "jiang_cheng", "name": "江城", "aliases": [], "type": "location" },
+    { "id": "dang_anguan", "name": "档案馆", "aliases": [], "type": "location" }
+  ],
+  "knowledge": [],
+  "suspense": [],
+  "timeline": [
+    { "chapter": 0, "day": 0, "location": "dang_anguan" },
+    { "chapter": 1, "day": 1, "location": "jiang_cheng" },
+    { "chapter": 2, "day": 2, "location": "dang_anguan" }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "novel-compiler-app",
+  "version": "0.4.4",
+  "private": true,
+  "description": "文检 IDE · 类 VSCode 风格写作 harness（Monaco 编辑器 + 状态 dashboard + problems 面板 + AI 面板）",
+  "dependencies": {
+    "monaco-editor": "^0.52.2"
+  }
+}

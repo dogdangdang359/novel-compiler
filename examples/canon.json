@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "title": "风雪破庙",
+    "target_reader": "webnovel",
+    "genre": "古风武侠"
+  },
+  "entities": [
+    {
+      "id": "shen_nanzhi",
+      "name": "沈南枝",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "tang_xiaotang",
+      "name": "唐小棠",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "sun_botong",
+      "name": "孙伯通",
+      "aliases": [
+        "铁拐医仙"
+      ],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "liu_qinghe",
+      "name": "柳青河",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "bai_canghai",
+      "name": "白沧海",
+      "aliases": [
+        "玄冥剑"
+      ],
+      "type": "character",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "shanmiao",
+      "name": "山神庙",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "qingyun_shan",
+      "name": "青云山",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "qingyun_dadian",
+      "name": "青云大殿",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "houshan_jindi",
+      "name": "后山禁地",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "meihua_yuzhui",
+      "name": "梅花玉坠",
+      "aliases": [],
+      "type": "item",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "poxu_jianjue",
+      "name": "破虚剑诀",
+      "aliases": [],
+      "type": "item",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "bohu",
+      "name": "帛书",
+      "aliases": [],
+      "type": "item",
+      "appears_from_chapter": 2
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k13",
+      "name": "沈南枝是青云门叛徒",
+      "terms": [
+        "叛出师门",
+        "偷盗镇派秘籍"
+      ],
+      "holders": [
+        "tang_xiaotang",
+        "sun_botong",
+        "shen_nanzhi"
+      ],
+      "known_from_chapter": 1
+    },
+    {
+      "id": "k14",
+      "name": "梅花玉坠是信物",
+      "terms": [
+        "信物",
+        "一对"
+      ],
+      "holders": [
+        "sun_botong",
+        "tang_xiaotang",
+        "shen_nanzhi"
+      ],
+      "known_from_chapter": 1
+    },
+    {
+      "id": "k15",
+      "name": "柳青河受白沧海指使",
+      "terms": [
+        "受人指使",
+        "你师父"
+      ],
+      "holders": [
+        "shen_nanzhi",
+        "liu_qinghe"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k16",
+      "name": "白沧海未死",
+      "terms": [
+        "没有死",
+        "走火入魔"
+      ],
+      "holders": [
+        "liu_qinghe",
+        "shen_nanzhi"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k17",
+      "name": "破虚剑诀",
+      "terms": [
+        "破虚剑诀",
+        "破碎虚空"
+      ],
+      "holders": [
+        "bai_canghai",
+        "shen_nanzhi"
+      ],
+      "known_from_chapter": 4
+    }
+  ],
+  "suspense": [
+    {
+      "id": "s11",
+      "name": "沈南枝的师父是谁",
+      "planted_in_chapter": 1,
+      "expected_resolve_chapter": 3,
+      "resolved_in_chapter": 3
+    },
+    {
+      "id": "s12",
+      "name": "柳青河为何陷害沈南枝",
+      "planted_in_chapter": 2,
+      "expected_resolve_chapter": 3,
+      "resolved_in_chapter": 3
+    },
+    {
+      "id": "s13",
+      "name": "白沧海能否被击败",
+      "planted_in_chapter": 4,
+      "expected_resolve_chapter": 4,
+      "resolved_in_chapter": 4
+    }
+  ],
+  "timeline": [
+    {
+      "chapter": 1,
+      "day": 1,
+      "location": "shanmiao"
+    },
+    {
+      "chapter": 2,
+      "day": 3,
+      "location": "shanmiao"
+    },
+    {
+      "chapter": 3,
+      "day": 18,
+      "location": "qingyun_shan"
+    },
+    {
+      "chapter": 4,
+      "day": 18,
+      "location": "houshan_jindi"
+    }
+  ]
+}

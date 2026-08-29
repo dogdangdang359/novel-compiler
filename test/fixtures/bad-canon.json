@@ -1,0 +1,10 @@
+{
+  "meta": { "title": "", "target_reader": "radio" },
+  "entities": [
+    { "id": "a", "name": "甲", "type": "dragon" },
+    { "id": "b" }
+  ],
+  "knowledge": [ { "id": "k1", "holders": ["ghost"] } ],
+  "suspense": [ { "id": "s1", "name": "谜", "resolved_in_chapter": 2 } ],
+  "timeline": [ { "chapter": 1, "day": 1, "location": "nope" } ]
+}

@@ -1,0 +1,22 @@
+node_modules/
+*.log
+.env
+*.bak-*
+*.partial
+
+# 根目录运行产物（wumizongji-* 等模拟/提取输出）
+/predictions/
+
+# app/predictions/ 保留 demo 数据（demo-canon.json、demo-project/、incr-demo/ 等），
+# 只忽略运行产物：last-* 信封、风险状态、测试残留、项目隔离目录内的产物
+app/predictions/last-*.json
+app/predictions/risk-status.json
+app/predictions/tmp-*
+app/predictions/*/last-*.json
+app/predictions/*/risk-status.json
+app/predictions/*/*.partial
+# demo 目录中的"上次提取"样例是演示数据，恢复跟踪
+!app/predictions/incr-demo/last-*.json
+
+# 用户配置可能含 apiKey，不提交（config-util 缺省回退示例项目，README 有完整示例 JSON）
+app/config.json

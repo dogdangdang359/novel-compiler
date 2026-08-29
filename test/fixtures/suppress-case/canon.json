@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "title": "豁免测试",
+    "target_reader": "genre",
+    "genre": "都市悬疑"
+  },
+  "entities": [
+    { "id": "shen_mo", "name": "沈默", "aliases": [], "type": "character" },
+    { "id": "lin_wan", "name": "林晚", "aliases": [], "type": "character" },
+    { "id": "zhou_jianguo", "name": "周建国", "aliases": [], "type": "character", "appears_from_chapter": 2 },
+    { "id": "jiang_cheng", "name": "江城", "aliases": [], "type": "location" }
+  ],
+  "knowledge": [],
+  "suspense": [],
+  "timeline": [
+    { "chapter": 1, "day": 1, "location": "jiang_cheng" },
+    { "chapter": 2, "day": 2, "location": "jiang_cheng" },
+    { "chapter": 3, "day": 3, "location": "jiang_cheng" }
+  ]
+}

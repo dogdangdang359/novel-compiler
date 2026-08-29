@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "信与钟",
+    "target_reader": "genre",
+    "genre": "悬疑短篇"
+  },
+  "entities": [
+    { "id": "shenmo", "name": "沈默", "aliases": [], "type": "character" },
+    { "id": "linwan", "name": "林晚", "aliases": [], "type": "character" },
+    { "id": "jiang_cheng", "name": "江城", "aliases": [], "type": "location" },
+    { "id": "dang_anguan", "name": "档案馆", "aliases": [], "type": "location" }
+  ],
+  "knowledge": [
+    {
+      "id": "k1x",
+      "name": "烧焦的记录藏在铜钟里",
+      "terms": ["铜钟"],
+      "holders": ["shenmo"],
+      "known_from_chapter": 3
+    }
+  ],
+  "suspense": [
+    { "id": "s1x", "name": "十年前火灾的真相", "planted_in_chapter": 1, "expected_resolve_chapter": 3, "resolved_in_chapter": 3 }
+  ],
+  "timeline": [
+    { "chapter": 1, "day": 1, "location": "jiang_cheng" },
+    { "chapter": 2, "day": 2, "location": "dang_anguan" },
+    { "chapter": 3, "day": 3, "location": "dang_anguan" }
+  ]
+}

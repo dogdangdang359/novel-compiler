@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "title": "规则关闭测试",
+    "target_reader": "genre",
+    "genre": "都市悬疑"
+  },
+  "entities": [
+    { "id": "shen_mo", "name": "沈默", "aliases": [], "type": "character" },
+    { "id": "lin_wan", "name": "林晚", "aliases": [], "type": "character" }
+  ],
+  "knowledge": [],
+  "suspense": [],
+  "timeline": [
+    { "chapter": 1, "day": 1 }
+  ]
+}

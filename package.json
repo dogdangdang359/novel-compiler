@@ -1,0 +1,21 @@
+{
+  "name": "novel-compiler",
+  "version": "0.4.4",
+  "description": "文检 novel-compiler —— 小说「编译器」：手稿 + canon → problems 报告；模拟器 + 比对器（AI 先行预测 + 防漂移）",
+  "main": "compile.js",
+  "scripts": {
+    "start": "node compile.js",
+    "demo": "node compile.js examples/manuscript.md examples/canon.json --reader webnovel",
+    "simulate": "node simulate.js examples/outline.md --premise examples/premise.md --canon examples/canon.json --reader webnovel",
+    "extract": "node extract-llm.js examples/manuscript.md --canon examples/canon.json --reader webnovel",
+    "rebase": "node rebase.js",
+    "refactor": "node refactor.js examples/manuscript.md examples/canon.json examples/outline.md examples/premise.md --reader webnovel",
+    "app": "node app/server.js",
+    "compare": "node compare.js",
+    "test": "node test/run-tests.js"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

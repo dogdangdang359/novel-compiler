@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "entity/missing": "error"
+  },
+  "thresholds": {
+    "chapterMin": 1000
+  }
+}

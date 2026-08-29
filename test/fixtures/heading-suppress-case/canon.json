@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "title": "标题行豁免测试",
+    "target_reader": "genre",
+    "genre": "都市悬疑"
+  },
+  "entities": [],
+  "knowledge": [],
+  "suspense": [],
+  "timeline": [
+    { "chapter": 1, "day": 1 }
+  ]
+}

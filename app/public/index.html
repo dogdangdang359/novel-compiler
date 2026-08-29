@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文检 IDE · novel-compiler</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="mode-creator">
+<header id="toolbar">
+  <div class="logo-wrap" id="logo-wrap">
+    <span class="logo" id="logo-btn" title="设置">文检<span class="logo-sub">novel-compiler</span><span class="logo-caret">▾</span></span>
+    <div id="settings-menu" class="menu hidden">
+      <div class="menu-item" id="settings-mode-item">开发者模式</div>
+    </div>
+  </div>
+  <div id="tabs"></div>
+  <div class="spacer"></div>
+  <label class="ctl">项目
+    <select id="project"></select>
+  </label>
+  <button id="btn-new-project" class="btn" title="新建项目">＋</button>
+  <label class="ctl dev-only">读者向
+    <select id="reader">
+      <option value="webnovel">webnovel 网文</option>
+      <option value="genre">genre 类型</option>
+      <option value="published">published 出版</option>
+    </select>
+  </label>
+  <label class="ctl dev-only">模型
+    <select id="model">
+      <option value="deepseek-chat">deepseek-chat</option>
+      <option value="deepseek-v4-flash">deepseek-v4-flash</option>
+    </select>
+  </label>
+  <div class="save-wrap">
+    <button id="btn-save" class="btn" title="Ctrl+S">保存 ▾</button>
+    <div id="save-menu" class="menu hidden">
+      <div class="menu-item" data-act="save">保存（当前文件）</div>
+      <div class="menu-item" data-act="save-as">另存为…（改路径并指向）</div>
+      <div class="menu-item" data-act="save-copy">存储为…（导出副本）</div>
+    </div>
+  </div>
+  <button id="btn-compile" class="btn primary dev-only" title="F5">编译</button>
+  <button id="btn-refactor" class="btn primary" title="文稿先行：逆推并重写 canon/outline/premise">重构</button>
+</header>
+
+<div id="main">
+  <aside id="dashboard">
+    <div id="dash-tabs">
+      <span class="dtab active" data-view="state">状态</span>
+      <span class="dtab" data-view="risks">风险登记册</span>
+    </div>
+    <div id="dash-state">
+    <section>
+      <h3>环境状态 · 时间线</h3>
+      <div id="dash-timeline"></div>
+    </section>
+    <section>
+      <h3>对象 · 角色/地点/物件</h3>
+      <div id="dash-entities"></div>
+    </section>
+    <section>
+      <h3>接口 · 悬念台账</h3>
+      <div id="dash-suspense"></div>
+    </section>
+    <section>
+      <h3>知识状态机</h3>
+      <div id="dash-knowledge"></div>
+    </section>
+    </div>
+    <div id="dash-risks" class="hidden">
+      <div class="risk-tools">
+        <span id="risk-summary"></span>
+        <button id="risk-refresh" class="btn small">刷新</button>
+        <button id="risk-reset" class="btn small">重置状态</button>
+      </div>
+      <div id="risk-list"></div>
+    </div>
+  </aside>
+
+  <div id="editor-wrap"><div id="editor"></div></div>
+
+  <aside id="ai">
+    <h3><span id="ai-title">AI 助手</span> <span class="hint dev-only">（右侧 AI 输入输出区）</span></h3>
+    <div class="report-buttons creator-only">
+      <button id="btn-report" class="btn primary" title="一键：保存 → 模拟 → 提取 → 比对 → 重规划 → 编译 → 审阅">生成报告</button>
+    </div>
+    <div class="ai-buttons dev-only">
+      <button id="btn-simulate" class="btn">① 模拟</button>
+      <button id="btn-extract" class="btn">② 提取</button>
+      <button id="btn-extract-ch" class="btn">②′ 提取本章</button>
+      <button id="btn-compare" class="btn">③ 比对</button>
+      <button id="btn-rebase" class="btn">④ 重规划</button>
+      <button id="btn-review" class="btn primary">⑤ 审阅</button>
+    </div>
+    <div id="ai-log"></div>
+  </aside>
+</div>
+
+<div id="problems">
+  <div class="problems-tabs">
+    <span class="ptab active" data-sev="all">全部 <b id="cnt-all">0</b></span>
+    <span class="ptab" data-sev="error">✗ 错误 <b id="cnt-error">0</b></span>
+    <span class="ptab" data-sev="warning">⚠ 警告 <b id="cnt-warning">0</b></span>
+    <span class="ptab" data-sev="info">ℹ 提示 <b id="cnt-info">0</b></span>
+    <span class="ptab" data-sev="suppressed">⊘ 已豁免 <b id="cnt-suppressed">0</b></span>
+    <span class="spacer"></span>
+    <button id="btn-clear-log" class="btn small">清空 AI 日志</button>
+  </div>
+  <div id="problems-list"></div>
+</div>
+
+<div id="lock-banner" class="hidden"></div>
+<footer id="statusbar">
+  <span id="status-left">文检 · 类 VSCode 写作 harness</span>
+  <span id="status-right"></span>
+</footer>
+
+<div id="project-modal" class="modal hidden">
+  <div class="modal-head">
+    <span>新建项目</span>
+    <button id="project-close" class="btn small">关闭</button>
+  </div>
+  <div id="project-body">
+    <div class="form-row"><label>项目名称</label><input id="np-name" type="text" placeholder="例如：雾都迷踪"></div>
+    <div class="form-row"><label>手稿</label><input id="np-manuscript" type="text"></div>
+    <div class="form-row"><label>canon</label><input id="np-canon" type="text"></div>
+    <div class="form-row"><label>大纲</label><input id="np-outline" type="text"></div>
+    <div class="form-row"><label>前提</label><input id="np-premise" type="text"></div>
+    <div class="form-hint">路径相对 app/ 目录；留空则按名称自动生成（examples/&lt;名称&gt;.md 等），文件不存在会自动创建。</div>
+  </div>
+  <div class="modal-foot">
+    <span class="spacer"></span>
+    <button id="project-create" class="btn primary">创建并切换</button>
+  </div>
+</div>
+
+<div id="review-modal" class="modal hidden">
+  <div class="modal-head">
+    <span>审阅提议 <span id="review-title"></span></span>
+    <button id="review-close" class="btn small">关闭</button>
+  </div>
+  <div id="review-body"></div>
+  <div class="modal-foot">
+    <span id="review-summary" class="review-summary"></span>
+    <span class="spacer"></span>
+    <button id="review-all-accept" class="btn">全部接受</button>
+    <button id="review-apply" class="btn primary">应用决定并写回设定</button>
+  </div>
+</div>
+
+<script src="/vendor/monaco/vs/loader.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

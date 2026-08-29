@@ -1,0 +1,208 @@
+{
+  "tool": "novel-compiler/extract-llm",
+  "version": "0.2.0",
+  "meta": {
+    "title": "未命名",
+    "target_reader": "webnovel",
+    "genre": "武侠",
+    "model": "deepseek-chat",
+    "extracted_at": "2026-08-24T09:23:12.926Z",
+    "source_manuscript": "examples/exam.md",
+    "source_canon": null,
+    "extraction_range": {
+      "from": 1,
+      "to": 1
+    }
+  },
+  "canon": {
+    "meta": {
+      "title": "未命名",
+      "target_reader": "webnovel",
+      "genre": "武侠"
+    },
+    "entities": [
+      {
+        "id": "lu_chen",
+        "name": "陆沉",
+        "aliases": [],
+        "type": "character",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "ting_yu_inn",
+        "name": "听雨客栈",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "yangzhou",
+        "name": "扬州",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "jinling",
+        "name": "金陵",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "black_cloaked_man",
+        "name": "黑衣人",
+        "aliases": [],
+        "type": "character",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "the_person",
+        "name": "那个人",
+        "aliases": [],
+        "type": "character",
+        "appears_from_chapter": 1
+      }
+    ],
+    "knowledge": [
+      {
+        "id": "k1",
+        "name": "龙虎会秘密",
+        "terms": [
+          "足以震动武林的秘密"
+        ],
+        "holders": [
+          "lu_chen"
+        ],
+        "known_from_chapter": 1
+      },
+      {
+        "id": "k2",
+        "name": "三年前的约定",
+        "terms": [
+          "等你真正懂了这句话，再来找我"
+        ],
+        "holders": [
+          "lu_chen"
+        ],
+        "known_from_chapter": 1
+      }
+    ],
+    "suspense": [
+      {
+        "id": "s1",
+        "name": "那个人的下落",
+        "planted_in_chapter": 1,
+        "expected_resolve_chapter": null,
+        "resolved_in_chapter": null
+      },
+      {
+        "id": "s2",
+        "name": "当年的事",
+        "planted_in_chapter": 1,
+        "expected_resolve_chapter": null,
+        "resolved_in_chapter": null
+      }
+    ],
+    "timeline": [
+      {
+        "chapter": 1,
+        "day": 1,
+        "location": "ting_yu_inn"
+      }
+    ]
+  },
+  "evidence": {
+    "entities": {
+      "lu_chen": [
+        {
+          "chapter": 1,
+          "line": 25,
+          "quote": "陆沉，你记住，这世上没有什么比活着更重要。"
+        }
+      ],
+      "ting_yu_inn": [
+        {
+          "chapter": 1,
+          "line": 5,
+          "quote": "走进了城西一家名叫“听雨”的小客栈。"
+        }
+      ],
+      "yangzhou": [
+        {
+          "chapter": 1,
+          "line": 5,
+          "quote": "扬州城外的古道早已泥泞不堪"
+        }
+      ],
+      "jinling": [
+        {
+          "chapter": 1,
+          "line": 19,
+          "quote": "三年一度的“龙虎会”将在七日后于金陵召开。"
+        }
+      ],
+      "black_cloaked_man": [
+        {
+          "chapter": 1,
+          "line": 41,
+          "quote": "一个黑衣人站在门口"
+        }
+      ],
+      "the_person": [
+        {
+          "chapter": 1,
+          "line": 25,
+          "quote": "那个人对他说"
+        }
+      ]
+    },
+    "knowledge": {
+      "k1": [
+        {
+          "chapter": 1,
+          "line": 19,
+          "quote": "据说有一件足以震动武林的秘密将要揭晓。"
+        }
+      ],
+      "k2": [
+        {
+          "chapter": 1,
+          "line": 25,
+          "quote": "等你真正懂了这句话，再来找我。"
+        }
+      ]
+    },
+    "suspense": {
+      "s1": [
+        {
+          "chapter": 1,
+          "line": 27,
+          "quote": "然后，那个人便消失了，像一滴水融入大海，再无踪迹。"
+        }
+      ],
+      "s2": [
+        {
+          "chapter": 1,
+          "line": 47,
+          "quote": "他说，当年的事，该有个了断了。"
+        }
+      ]
+    },
+    "timeline": {
+      "1": [
+        {
+          "chapter": 1,
+          "line": 5,
+          "quote": "走进了城西一家名叫“听雨”的小客栈。"
+        }
+      ]
+    }
+  },
+  "extraction_notes": [
+    "第1章为提取范围，所有条目均来自该章。",
+    "实体'那个人'未命名，但作为重要角色出现，故收录。",
+    "悬念s1和s2未回收，resolved_in_chapter为null。",
+    "时间线：正文未明确日期，但雨下了三天三夜，推断为第1天。"
+  ]
+}

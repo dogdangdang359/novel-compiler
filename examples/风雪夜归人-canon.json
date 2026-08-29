@@ -1,0 +1,719 @@
+{
+  "meta": {
+    "title": "风雪夜归人",
+    "target_reader": "webnovel",
+    "genre": ""
+  },
+  "entities": [
+    {
+      "id": "shen_yan",
+      "name": "沈砚",
+      "aliases": [
+        "沈少主",
+        "小少爷",
+        "师弟"
+      ],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "mo_lao",
+      "name": "墨老",
+      "aliases": [
+        "墨老道",
+        "师父"
+      ],
+      "type": "character",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "su_wan",
+      "name": "苏绾",
+      "aliases": [
+        "苏师姐"
+      ],
+      "type": "character",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "ye_qingxian",
+      "name": "叶清弦",
+      "aliases": [
+        "叶姑娘"
+      ],
+      "type": "character",
+      "appears_from_chapter": 6
+    },
+    {
+      "id": "ye_huaizhou",
+      "name": "叶怀舟",
+      "aliases": [
+        "叶前辈",
+        "叶阁主"
+      ],
+      "type": "character",
+      "appears_from_chapter": 9
+    },
+    {
+      "id": "dugu_jin",
+      "name": "独孤烬",
+      "aliases": [
+        "独孤堂主",
+        "堂主"
+      ],
+      "type": "character",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "shen_chongshan",
+      "name": "沈崇山",
+      "aliases": [
+        "父亲",
+        "崇山兄"
+      ],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "shen_chongyue",
+      "name": "沈崇岳",
+      "aliases": [
+        "大伯"
+      ],
+      "type": "character",
+      "appears_from_chapter": 17
+    },
+    {
+      "id": "gongyang_yu",
+      "name": "公羊羽",
+      "aliases": [
+        "琴痴",
+        "前辈"
+      ],
+      "type": "character",
+      "appears_from_chapter": 22
+    },
+    {
+      "id": "tang_xiaoyu",
+      "name": "唐小鱼",
+      "aliases": [
+        "小鱼"
+      ],
+      "type": "character",
+      "appears_from_chapter": 16
+    },
+    {
+      "id": "shen_honglian",
+      "name": "沈红莲",
+      "aliases": [
+        "银莲阁主"
+      ],
+      "type": "character",
+      "appears_from_chapter": 23
+    },
+    {
+      "id": "zhou_ye",
+      "name": "周野",
+      "aliases": [
+        "周前辈"
+      ],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "xuanci",
+      "name": "玄慈",
+      "aliases": [
+        "玄慈师伯",
+        "玄慈大师"
+      ],
+      "type": "character",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "zhao_qiwu",
+      "name": "赵栖梧",
+      "aliases": [
+        "赵师兄"
+      ],
+      "type": "character",
+      "appears_from_chapter": 21
+    },
+    {
+      "id": "wei_buqi",
+      "name": "魏不器",
+      "aliases": [
+        "魏前辈"
+      ],
+      "type": "character",
+      "appears_from_chapter": 17
+    },
+    {
+      "id": "huo_dapao",
+      "name": "霍大炮",
+      "aliases": [
+        "船长"
+      ],
+      "type": "character",
+      "appears_from_chapter": 29
+    },
+    {
+      "id": "tingyujian",
+      "name": "听雨剑",
+      "aliases": [
+        "听雨"
+      ],
+      "type": "item",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "suiyu",
+      "name": "碎玉",
+      "aliases": [
+        "半块碎玉",
+        "碎玉"
+      ],
+      "type": "item",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "taixu_jianpu",
+      "name": "太虚剑谱",
+      "aliases": [
+        "剑谱",
+        "太虚剑意"
+      ],
+      "type": "item",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "xuejing",
+      "name": "血神经",
+      "aliases": [
+        "《血神经》"
+      ],
+      "type": "item",
+      "appears_from_chapter": 21
+    },
+    {
+      "id": "shanshenmiao",
+      "name": "山神庙",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "zhongnanshan",
+      "name": "终南山",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "yuxu_gong",
+      "name": "玉清宫",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "shenjia_laozhai",
+      "name": "沈家老宅",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 5
+    },
+    {
+      "id": "tingfeng_ge",
+      "name": "听风阁",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 9
+    },
+    {
+      "id": "xue_lian_wu",
+      "name": "血莲坞",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 13
+    },
+    {
+      "id": "dongting_hu",
+      "name": "洞庭湖",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 13
+    },
+    {
+      "id": "jian_zhong",
+      "name": "剑冢",
+      "aliases": [
+        "水下剑冢"
+      ],
+      "type": "location",
+      "appears_from_chapter": 16
+    },
+    {
+      "id": "chenjian_ge",
+      "name": "沉剑阁",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 16
+    },
+    {
+      "id": "guimen_tan",
+      "name": "鬼门滩",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 16
+    },
+    {
+      "id": "tingyuxuan",
+      "name": "听雨轩",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 21
+    },
+    {
+      "id": "yinlian_ge",
+      "name": "银莲阁",
+      "aliases": [
+        "银莲别苑"
+      ],
+      "type": "location",
+      "appears_from_chapter": 21
+    },
+    {
+      "id": "heishui_cheng",
+      "name": "黑水城",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 25
+    },
+    {
+      "id": "fengling_du",
+      "name": "风陵渡",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 27
+    },
+    {
+      "id": "guixu",
+      "name": "归墟",
+      "aliases": [
+        "血莲城"
+      ],
+      "type": "location",
+      "appears_from_chapter": 28
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k1",
+      "name": "太虚剑谱总纲",
+      "terms": [
+        "太虚引气诀",
+        "意在剑先，剑随心动"
+      ],
+      "holders": [
+        "shen_yan",
+        "mo_lao"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k2",
+      "name": "太虚剑意需沈家血脉",
+      "terms": [
+        "沈家血脉",
+        "剑意不在纸上，在骨子里"
+      ],
+      "holders": [
+        "su_wan",
+        "shen_yan"
+      ],
+      "known_from_chapter": 4
+    },
+    {
+      "id": "k3",
+      "name": "碎玉拼合指向听风阁",
+      "terms": [
+        "蜀中·剑门关·听风阁"
+      ],
+      "holders": [
+        "shen_yan",
+        "su_wan"
+      ],
+      "known_from_chapter": 5
+    },
+    {
+      "id": "k4",
+      "name": "独孤烬命门",
+      "terms": [
+        "气海穴",
+        "月圆之夜子时"
+      ],
+      "holders": [
+        "shen_yan",
+        "ye_huaizhou"
+      ],
+      "known_from_chapter": 9
+    },
+    {
+      "id": "k5",
+      "name": "独孤烬身世",
+      "terms": [
+        "沈家血脉",
+        "亲堂伯",
+        "沈氏长房"
+      ],
+      "holders": [
+        "shen_yan",
+        "mo_lao"
+      ],
+      "known_from_chapter": 15
+    },
+    {
+      "id": "k6",
+      "name": "沈崇岳在剑冢",
+      "terms": [
+        "剑冢",
+        "沈崇岳",
+        "困住自己"
+      ],
+      "holders": [
+        "wei_buqi",
+        "shen_yan"
+      ],
+      "known_from_chapter": 17
+    },
+    {
+      "id": "k7",
+      "name": "血神经七卷",
+      "terms": [
+        "血神经",
+        "七卷",
+        "银莲阁主人"
+      ],
+      "holders": [
+        "shen_yan",
+        "su_wan",
+        "mo_lao"
+      ],
+      "known_from_chapter": 21
+    },
+    {
+      "id": "k8",
+      "name": "焦尾琴藏第一卷线索",
+      "terms": [
+        "焦尾",
+        "丝帛",
+        "第一卷"
+      ],
+      "holders": [
+        "gongyang_yu",
+        "shen_yan"
+      ],
+      "known_from_chapter": 22
+    },
+    {
+      "id": "k9",
+      "name": "银莲阁主练血髓换骨",
+      "terms": [
+        "血髓换骨",
+        "血珊瑚粉末"
+      ],
+      "holders": [
+        "gongyang_yu",
+        "shen_yan",
+        "tang_xiaoyu"
+      ],
+      "known_from_chapter": 25
+    },
+    {
+      "id": "k10",
+      "name": "归墟是血莲城",
+      "terms": [
+        "归墟",
+        "血莲城",
+        "漩涡"
+      ],
+      "holders": [
+        "mo_lao",
+        "shen_yan"
+      ],
+      "known_from_chapter": 28
+    },
+    {
+      "id": "k11",
+      "name": "沈红莲身份",
+      "terms": [
+        "沈万山的亲姐姐",
+        "沈红莲",
+        "长女"
+      ],
+      "holders": [
+        "shen_yan"
+      ],
+      "known_from_chapter": 30
+    },
+    {
+      "id": "k12",
+      "name": "沈红莲的复仇计划",
+      "terms": [
+        "向沈家复仇",
+        "太虚剑意",
+        "火种"
+      ],
+      "holders": [
+        "shen_yan"
+      ],
+      "known_from_chapter": 31
+    },
+    {
+      "id": "k13",
+      "name": "七卷血神经合一可重塑肉身",
+      "terms": [
+        "七卷合一",
+        "活过来",
+        "重塑肉身"
+      ],
+      "holders": [
+        "shen_yan"
+      ],
+      "known_from_chapter": 31
+    },
+    {
+      "id": "k14",
+      "name": "血莲城是巨大剑阵",
+      "terms": [
+        "整座血莲城",
+        "巨大的剑",
+        "剑阵"
+      ],
+      "holders": [
+        "shen_yan"
+      ],
+      "known_from_chapter": 32
+    },
+    {
+      "id": "k15",
+      "name": "太虚剑意可化解执念",
+      "terms": [
+        "化解",
+        "执念",
+        "了结"
+      ],
+      "holders": [
+        "shen_yan"
+      ],
+      "known_from_chapter": 32
+    }
+  ],
+  "suspense": [
+    {
+      "id": "s1",
+      "name": "墨老生死",
+      "planted_in_chapter": 4,
+      "expected_resolve_chapter": 12,
+      "resolved_in_chapter": 12
+    },
+    {
+      "id": "s2",
+      "name": "另一半碎玉的秘密",
+      "planted_in_chapter": 1,
+      "expected_resolve_chapter": 5,
+      "resolved_in_chapter": 5
+    },
+    {
+      "id": "s3",
+      "name": "独孤烬与沈家关系",
+      "planted_in_chapter": 15,
+      "expected_resolve_chapter": 17,
+      "resolved_in_chapter": 17
+    },
+    {
+      "id": "s4",
+      "name": "沈崇岳下落",
+      "planted_in_chapter": 17,
+      "expected_resolve_chapter": 18,
+      "resolved_in_chapter": 18
+    },
+    {
+      "id": "s5",
+      "name": "银莲阁主身份",
+      "planted_in_chapter": 23,
+      "expected_resolve_chapter": 30,
+      "resolved_in_chapter": 30
+    },
+    {
+      "id": "s6",
+      "name": "沈红莲的最终结局",
+      "planted_in_chapter": 31,
+      "expected_resolve_chapter": 32,
+      "resolved_in_chapter": 32
+    }
+  ],
+  "timeline": [
+    {
+      "chapter": 1,
+      "day": 1,
+      "location": "shanshenmiao"
+    },
+    {
+      "chapter": 2,
+      "day": 2,
+      "location": "zhongnanshan"
+    },
+    {
+      "chapter": 3,
+      "day": 3,
+      "location": "zhongnanshan"
+    },
+    {
+      "chapter": 4,
+      "day": 4,
+      "location": "zhongnanshan"
+    },
+    {
+      "chapter": 5,
+      "day": 5,
+      "location": "shenjia_laozhai"
+    },
+    {
+      "chapter": 6,
+      "day": 6,
+      "location": "shenjia_laozhai"
+    },
+    {
+      "chapter": 7,
+      "day": 7,
+      "location": "shenjia_laozhai"
+    },
+    {
+      "chapter": 8,
+      "day": 8,
+      "location": "shenjia_laozhai"
+    },
+    {
+      "chapter": 9,
+      "day": 9,
+      "location": "tingfeng_ge"
+    },
+    {
+      "chapter": 10,
+      "day": 10,
+      "location": "tingfeng_ge"
+    },
+    {
+      "chapter": 11,
+      "day": 11,
+      "location": "tingfeng_ge"
+    },
+    {
+      "chapter": 12,
+      "day": 12,
+      "location": "tingfeng_ge"
+    },
+    {
+      "chapter": 13,
+      "day": 13,
+      "location": "dongting_hu"
+    },
+    {
+      "chapter": 14,
+      "day": 14,
+      "location": "xue_lian_wu"
+    },
+    {
+      "chapter": 15,
+      "day": 15,
+      "location": "xue_lian_wu"
+    },
+    {
+      "chapter": 16,
+      "day": 16,
+      "location": "guimen_tan"
+    },
+    {
+      "chapter": 17,
+      "day": 17,
+      "location": "chenjian_ge"
+    },
+    {
+      "chapter": 18,
+      "day": 18,
+      "location": "jian_zhong"
+    },
+    {
+      "chapter": 19,
+      "day": 19,
+      "location": "guimen_tan"
+    },
+    {
+      "chapter": 20,
+      "day": 20,
+      "location": "chenjian_ge"
+    },
+    {
+      "chapter": 21,
+      "day": 21,
+      "location": "tingyuxuan"
+    },
+    {
+      "chapter": 22,
+      "day": 22,
+      "location": "tingyuxuan"
+    },
+    {
+      "chapter": 23,
+      "day": 23,
+      "location": "tingyuxuan"
+    },
+    {
+      "chapter": 24,
+      "day": 24,
+      "location": "tingyuxuan"
+    },
+    {
+      "chapter": 25,
+      "day": 25,
+      "location": "heishui_cheng"
+    },
+    {
+      "chapter": 26,
+      "day": 26,
+      "location": "heishui_cheng"
+    },
+    {
+      "chapter": 27,
+      "day": 27,
+      "location": "fengling_du"
+    },
+    {
+      "chapter": 28,
+      "day": 28,
+      "location": "tingyuxuan"
+    },
+    {
+      "chapter": 29,
+      "day": 29,
+      "location": "guixu"
+    },
+    {
+      "chapter": 30,
+      "day": 30,
+      "location": "guixu"
+    },
+    {
+      "chapter": 31,
+      "day": 31,
+      "location": "guixu"
+    },
+    {
+      "chapter": 32,
+      "day": 32,
+      "location": "guixu"
+    }
+  ]
+}

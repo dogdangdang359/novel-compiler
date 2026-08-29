@@ -1,0 +1,413 @@
+{
+  "tool": "novel-compiler/extract-llm",
+  "version": "0.3.6",
+  "meta": {
+    "title": "锦鲤抄",
+    "target_reader": "webnovel",
+    "genre": "古风武侠/权谋",
+    "model": "deepseek-chat",
+    "extracted_at": "2026-08-24T14:40:36.405Z",
+    "source_manuscript": "app/predictions/incr-demo/exam2.md",
+    "source_canon": "app/predictions/incr-demo/exam2-canon.json",
+    "extraction_range": {
+      "chapters": [
+        2
+      ]
+    },
+    "chapter_hashes": {
+      "1": "c627f871",
+      "2": "50f365d4",
+      "3": "a931d8c2",
+      "4": "bdc31fda"
+    },
+    "incremental": {
+      "merged_from": "app/predictions/incr-demo/last-extract.json",
+      "dirty_chapters": [
+        2
+      ]
+    }
+  },
+  "canon": {
+    "meta": {
+      "title": "锦鲤抄",
+      "target_reader": "webnovel",
+      "genre": "古风武侠/权谋"
+    },
+    "entities": [
+      {
+        "id": "liu_xingmian",
+        "name": "柳星眠",
+        "aliases": [
+          "柳公子"
+        ],
+        "type": "character",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "jiang_yingxue",
+        "name": "江映雪",
+        "aliases": [],
+        "type": "character",
+        "appears_from_chapter": 2
+      },
+      {
+        "id": "su_mubai",
+        "name": "苏慕白",
+        "aliases": [
+          "千面狐"
+        ],
+        "type": "character",
+        "appears_from_chapter": 3
+      },
+      {
+        "id": "meng_chang",
+        "name": "孟尝",
+        "aliases": [
+          "铁算盘"
+        ],
+        "type": "character",
+        "appears_from_chapter": 3
+      },
+      {
+        "id": "zhang_fang",
+        "name": "账房先生",
+        "aliases": [],
+        "type": "character",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "huo_qubing",
+        "name": "霍去病",
+        "aliases": [
+          "霍将军"
+        ],
+        "type": "character",
+        "appears_from_chapter": 4
+      },
+      {
+        "id": "ruyi_xuan",
+        "name": "如意轩",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 1
+      },
+      {
+        "id": "fei_yuan",
+        "name": "城西废园",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 2
+      },
+      {
+        "id": "tingtao_shanzhuang",
+        "name": "听涛山庄",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 3
+      },
+      {
+        "id": "zhuque_dajie",
+        "name": "朱雀大街",
+        "aliases": [],
+        "type": "location",
+        "appears_from_chapter": 4
+      },
+      {
+        "id": "shanghe_shetu",
+        "name": "《山河社稷图》",
+        "aliases": [
+          "山河社稷图"
+        ],
+        "type": "item",
+        "appears_from_chapter": 1
+      }
+    ],
+    "knowledge": [
+      {
+        "id": "k1",
+        "name": "《山河社稷图》是诱饵",
+        "terms": [
+          "这幅图本身就是诱饵"
+        ],
+        "holders": [
+          "su_mubai"
+        ],
+        "known_from_chapter": 3
+      },
+      {
+        "id": "k2",
+        "name": "真正的《山河社稷图》在苏慕白手中",
+        "terms": [
+          "这才是真正的《山河社稷图》"
+        ],
+        "holders": [
+          "su_mubai"
+        ],
+        "known_from_chapter": 3
+      },
+      {
+        "id": "k3",
+        "name": "孟尝是内奸",
+        "terms": [
+          "孟尝护法……果然是你"
+        ],
+        "holders": [
+          "liu_xingmian",
+          "jiang_yingxue"
+        ],
+        "known_from_chapter": 4
+      },
+      {
+        "id": "k4",
+        "name": "孟尝的合作者身份不明",
+        "terms": [
+          "你的合作者是谁？"
+        ],
+        "holders": [
+          "liu_xingmian"
+        ],
+        "known_from_chapter": 4
+      },
+      {
+        "id": "k5",
+        "name": "苏慕白早已识破孟尝",
+        "terms": [
+          "从你第一次接触那个神秘人的时候，我就知道了"
+        ],
+        "holders": [
+          "su_mubai"
+        ],
+        "known_from_chapter": 4
+      }
+    ],
+    "suspense": [
+      {
+        "id": "s1",
+        "name": "《山河社稷图》的秘密",
+        "planted_in_chapter": 1,
+        "expected_resolve_chapter": null,
+        "resolved_in_chapter": null
+      },
+      {
+        "id": "s2",
+        "name": "幕后黑手是谁",
+        "planted_in_chapter": 3,
+        "expected_resolve_chapter": 4,
+        "resolved_in_chapter": 4
+      },
+      {
+        "id": "s3",
+        "name": "孟尝的合作者是谁",
+        "planted_in_chapter": 4,
+        "expected_resolve_chapter": null,
+        "resolved_in_chapter": null
+      }
+    ],
+    "timeline": [
+      {
+        "chapter": 1,
+        "day": 1,
+        "location": "ruyi_xuan"
+      },
+      {
+        "chapter": 2,
+        "day": 1,
+        "location": "fei_yuan"
+      },
+      {
+        "chapter": 3,
+        "day": 1,
+        "location": "tingtao_shanzhuang"
+      },
+      {
+        "chapter": 4,
+        "day": 4,
+        "location": "zhuque_dajie"
+      }
+    ]
+  },
+  "evidence": {
+    "entities": {
+      "liu_xingmian": [
+        {
+          "chapter": 1,
+          "line": 37,
+          "quote": "少年——柳星眠，摘星楼最年轻的“银牌”窃贼"
+        }
+      ],
+      "jiang_yingxue": [
+        {
+          "chapter": 2,
+          "line": 101,
+          "quote": "我叫江映雪"
+        }
+      ],
+      "su_mubai": [
+        {
+          "chapter": 3,
+          "line": 177,
+          "quote": "正是摘星楼楼主，“千面狐”苏慕白"
+        }
+      ],
+      "meng_chang": [
+        {
+          "chapter": 3,
+          "line": 169,
+          "quote": "摘星楼的首席护法，“铁算盘”孟尝"
+        }
+      ],
+      "zhang_fang": [
+        {
+          "chapter": 1,
+          "line": 27,
+          "quote": "柜台后面一个戴着老花镜的账房先生"
+        }
+      ],
+      "huo_qubing": [
+        {
+          "chapter": 4,
+          "line": 369,
+          "quote": "正是禁军统领，霍去病"
+        }
+      ],
+      "ruyi_xuan": [
+        {
+          "chapter": 1,
+          "line": 25,
+          "quote": "上面写着三个字——“如意轩”"
+        }
+      ],
+      "fei_yuan": [
+        {
+          "chapter": 2,
+          "line": 75,
+          "quote": "城西废园"
+        }
+      ],
+      "tingtao_shanzhuang": [
+        {
+          "chapter": 3,
+          "line": 163,
+          "quote": "楼主在城外的‘听涛山庄’等你"
+        }
+      ],
+      "zhuque_dajie": [
+        {
+          "chapter": 4,
+          "line": 235,
+          "quote": "长安城，朱雀大街"
+        }
+      ],
+      "shanghe_shetu": [
+        {
+          "chapter": 1,
+          "line": 45,
+          "quote": "《山河社稷图》残卷"
+        }
+      ]
+    },
+    "knowledge": {
+      "k1": [
+        {
+          "chapter": 3,
+          "line": 197,
+          "quote": "这幅图本身就是诱饵"
+        }
+      ],
+      "k2": [
+        {
+          "chapter": 3,
+          "line": 221,
+          "quote": "这才是真正的《山河社稷图》"
+        }
+      ],
+      "k3": [
+        {
+          "chapter": 4,
+          "line": 265,
+          "quote": "孟尝护法……果然是你"
+        }
+      ],
+      "k4": [
+        {
+          "chapter": 4,
+          "line": 281,
+          "quote": "你的合作者是谁？"
+        }
+      ],
+      "k5": [
+        {
+          "chapter": 4,
+          "line": 359,
+          "quote": "从你第一次接触那个神秘人的时候，我就知道了"
+        }
+      ]
+    },
+    "suspense": {
+      "s1": [
+        {
+          "chapter": 1,
+          "line": 45,
+          "quote": "《山河社稷图》残卷——买主：无名。赏金：黄金一万两。"
+        }
+      ],
+      "s2": [
+        {
+          "chapter": 3,
+          "line": 195,
+          "quote": "幕后主使的身份不明"
+        },
+        {
+          "chapter": 4,
+          "line": 375,
+          "quote": "苏慕白，你赢了"
+        }
+      ],
+      "s3": [
+        {
+          "chapter": 4,
+          "line": 281,
+          "quote": "你的合作者是谁？"
+        }
+      ]
+    },
+    "timeline": {
+      "1": [
+        {
+          "chapter": 1,
+          "line": 3,
+          "quote": "长安城东市，午时三刻。"
+        }
+      ],
+      "2": [
+        {
+          "chapter": 2,
+          "line": 75,
+          "quote": "城西废园，曾是某位落魄王爷的别苑"
+        }
+      ],
+      "3": [
+        {
+          "chapter": 3,
+          "line": 157,
+          "quote": "柳星眠赶回如意轩时，天色已经完全黑了。"
+        }
+      ],
+      "4": [
+        {
+          "chapter": 4,
+          "line": 235,
+          "quote": "三日后的深夜，长安城，朱雀大街。"
+        }
+      ]
+    }
+  },
+  "retired": null,
+  "extraction_notes": [
+    "提取范围仅第2章，基线中所有条目均保留，未做任何字段修正。",
+    "新增实体：江映雪（首次出现于第2章第102行），城西废园（首次出现于第2章第75行）。",
+    "新增知识：无（第2章中江映雪揭示《山河社稷图》是假图，但该信息未在基线知识中体现，且未跨越章节，故不新增）。",
+    "新增悬念：无（第2章中未埋设新的悬念，基线悬念均保留）。",
+    "timeline：第2章沿用第1章day=1，地点为城西废园。"
+  ]
+}

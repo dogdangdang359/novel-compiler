@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "title": "规则提级测试",
+    "target_reader": "genre",
+    "genre": "都市悬疑"
+  },
+  "entities": [
+    { "id": "shen_mo", "name": "沈默", "aliases": [], "type": "character" },
+    { "id": "lin_wan", "name": "林晚", "aliases": [], "type": "character" },
+    { "id": "zhou_jianguo", "name": "周建国", "aliases": [], "type": "character", "appears_from_chapter": 1 }
+  ],
+  "knowledge": [],
+  "suspense": [],
+  "timeline": [
+    { "chapter": 1, "day": 1 }
+  ]
+}

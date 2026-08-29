@@ -1,0 +1,199 @@
+{
+  "meta": {
+    "title": "锦鲤抄",
+    "target_reader": "webnovel",
+    "genre": "古风武侠/权谋"
+  },
+  "entities": [
+    {
+      "id": "liu_xingmian",
+      "name": "柳星眠",
+      "aliases": [
+        "柳公子"
+      ],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "jiang_yingxue",
+      "name": "江映雪",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "su_mubai",
+      "name": "苏慕白",
+      "aliases": [
+        "千面狐"
+      ],
+      "type": "character",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "meng_chang",
+      "name": "孟尝",
+      "aliases": [
+        "铁算盘"
+      ],
+      "type": "character",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "zhang_fang",
+      "name": "账房先生",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "huo_qubing",
+      "name": "霍去病",
+      "aliases": [
+        "霍将军"
+      ],
+      "type": "character",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "ruyi_xuan",
+      "name": "如意轩",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "fei_yuan",
+      "name": "城西废园",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "tingtao_shanzhuang",
+      "name": "听涛山庄",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 3
+    },
+    {
+      "id": "zhuque_dajie",
+      "name": "朱雀大街",
+      "aliases": [],
+      "type": "location",
+      "appears_from_chapter": 4
+    },
+    {
+      "id": "shanghe_shetu",
+      "name": "《山河社稷图》",
+      "aliases": [
+        "山河社稷图"
+      ],
+      "type": "item",
+      "appears_from_chapter": 1
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k1",
+      "name": "《山河社稷图》是诱饵",
+      "terms": [
+        "这幅图本身就是诱饵"
+      ],
+      "holders": [
+        "su_mubai"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k2",
+      "name": "真正的《山河社稷图》在苏慕白手中",
+      "terms": [
+        "这才是真正的《山河社稷图》"
+      ],
+      "holders": [
+        "su_mubai"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k3",
+      "name": "孟尝是内奸",
+      "terms": [
+        "孟尝护法……果然是你"
+      ],
+      "holders": [
+        "liu_xingmian",
+        "jiang_yingxue"
+      ],
+      "known_from_chapter": 4
+    },
+    {
+      "id": "k4",
+      "name": "孟尝的合作者身份不明",
+      "terms": [
+        "你的合作者是谁？"
+      ],
+      "holders": [
+        "liu_xingmian"
+      ],
+      "known_from_chapter": 4
+    },
+    {
+      "id": "k5",
+      "name": "苏慕白早已识破孟尝",
+      "terms": [
+        "从你第一次接触那个神秘人的时候，我就知道了"
+      ],
+      "holders": [
+        "su_mubai"
+      ],
+      "known_from_chapter": 4
+    }
+  ],
+  "suspense": [
+    {
+      "id": "s1",
+      "name": "《山河社稷图》的秘密",
+      "planted_in_chapter": 1,
+      "expected_resolve_chapter": null,
+      "resolved_in_chapter": null
+    },
+    {
+      "id": "s2",
+      "name": "幕后黑手是谁",
+      "planted_in_chapter": 3,
+      "expected_resolve_chapter": 4,
+      "resolved_in_chapter": 4
+    },
+    {
+      "id": "s3",
+      "name": "孟尝的合作者是谁",
+      "planted_in_chapter": 4,
+      "expected_resolve_chapter": null,
+      "resolved_in_chapter": null
+    }
+  ],
+  "timeline": [
+    {
+      "chapter": 1,
+      "day": 1,
+      "location": "ruyi_xuan"
+    },
+    {
+      "chapter": 2,
+      "day": 1,
+      "location": "fei_yuan"
+    },
+    {
+      "chapter": 3,
+      "day": 1,
+      "location": "tingtao_shanzhuang"
+    },
+    {
+      "chapter": 4,
+      "day": 4,
+      "location": "zhuque_dajie"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "title": "雾都迷踪",
+    "target_reader": "webnovel",
+    "genre": "都市悬疑"
+  },
+  "entities": [
+    {
+      "id": "shen_mo",
+      "name": "沈默",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "lin_wan",
+      "name": "林晚",
+      "aliases": [],
+      "type": "character",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "zhou_jianguo",
+      "name": "周建国",
+      "aliases": [
+        "老周"
+      ],
+      "type": "character",
+      "appears_from_chapter": 2
+    },
+    {
+      "id": "jiang_cheng",
+      "name": "江城",
+      "aliases": [
+        "江城码头"
+      ],
+      "type": "location",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "dang_anguan",
+      "name": "档案馆",
+      "aliases": [
+        "市档案馆"
+      ],
+      "type": "location",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "tong_zhong",
+      "name": "铜钟",
+      "aliases": [],
+      "type": "item",
+      "appears_from_chapter": 1
+    },
+    {
+      "id": "huang_tong_yaoshi",
+      "name": "黄铜钥匙",
+      "aliases": [],
+      "type": "item",
+      "appears_from_chapter": 3
+    }
+  ],
+  "knowledge": [
+    {
+      "id": "k1",
+      "name": "钥匙藏在铜钟的暗格里",
+      "terms": [
+        "暗格",
+        "黄铜钥匙"
+      ],
+      "holders": [
+        "shen_mo"
+      ],
+      "known_from_chapter": 3
+    },
+    {
+      "id": "k2",
+      "name": "林晚是内鬼",
+      "terms": [
+        "内鬼"
+      ],
+      "holders": [
+        "lin_wan"
+      ],
+      "known_from_chapter": 5
+    },
+    {
+      "id": "k3",
+      "name": "火灾真相藏在铜钟里",
+      "terms": [
+        "真相",
+        "铜钟"
+      ],
+      "holders": [
+        "shen_mo"
+      ],
+      "known_from_chapter": 5
+    }
+  ],
+  "suspense": [
+    {
+      "id": "s1",
+      "name": "十年前那场火灾的真相",
+      "planted_in_chapter": 1,
+      "expected_resolve_chapter": 5,
+      "resolved_in_chapter": 5
+    },
+    {
+      "id": "s2",
+      "name": "匿名信是谁写的",
+      "planted_in_chapter": 2,
+      "expected_resolve_chapter": 6,
+      "resolved_in_chapter": null
+    },
+    {
+      "id": "s3",
+      "name": "铜钟的来历",
+      "planted_in_chapter": 1,
+      "expected_resolve_chapter": 4,
+      "resolved_in_chapter": null
+    }
+  ],
+  "timeline": [
+    {
+      "chapter": 1,
+      "day": 1,
+      "location": "dang_anguan"
+    },
+    {
+      "chapter": 2,
+      "day": 1,
+      "location": "jiang_cheng"
+    },
+    {
+      "chapter": 3,
+      "day": 2,
+      "location": "dang_anguan"
+    },
+    {
+      "chapter": 4,
+      "day": 3,
+      "location": "dang_anguan"
+    },
+    {
+      "chapter": 5,
+      "day": 2,
+      "location": "dang_anguan"
+    }
+  ]
+}
