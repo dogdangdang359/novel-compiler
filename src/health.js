@@ -57,7 +57,8 @@ function buildHealthReport(canon) {
   }
   const total = suspense.length;
   const resolved = cat.resolved.length;
-  const resolveRate = total ? resolved / total : (min(1, knowledge.length / 6));
+  // 无悬念（total=0）时回收率取 0：不拿世界观知识量代偿，否则评分会掩盖"结构单薄"这一真实短板
+  const resolveRate = total ? resolved / total : 0;
 
   // 已回收条目的平均延迟（回收章 - 埋点章）
   const lags = cat.resolved.map((s) => (s.resolved - (s.planted || 1) + 1)).filter((n) => n >= 1);
@@ -88,11 +89,12 @@ function buildHealthReport(canon) {
   const coverage = chapters.length ? coveredChapters / chapters.length : 0;
   const lastEntityChapter = entities.length ? max.apply(null, entities.map((e) => e.appears_from_chapter || 1)) : lo;
 
-  // ③ 六维雷达（各 0..1）
+  // ③ 六维雷达（各 0..1）。注意无悬念时 resolve/inFlight 取 0 而非代偿：
+  // 承诺是"结构健康评分"，零悬念即结构单薄，必须诚实拉低，绝不因世界观量对冲
   const dimensions = {
     resolve: min(1, resolveRate),
     overdue: cat.overdue.length === 0 ? 1 : max(0, 1 - cat.overdue.length * 0.2),
-    inFlight: total ? (resolved + cat.inflight.length) / total : min(1, knowledge.length / 6),
+    inFlight: total ? (resolved + cat.inflight.length) / total : 0,
     cast: min(1, entities.length / 5),
     world: min(1, knowledge.length / 6),
     coverage: min(1, coverage),

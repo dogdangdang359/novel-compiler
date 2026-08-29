@@ -4709,6 +4709,20 @@ try {
     check('空 canon 章节=1 且无悬念', bare.meta.chapterCount === 1 && bare.suspense.total === 0, JSON.stringify(bare.meta));
     check('空 canon 评分=25 · 判定=需大修', bare.meta.score === 25 && bare.meta.verdict === '需大修', bare.meta.score + '/' + bare.meta.verdict);
     check('空 canon 列 no-suspense 警戒', bare.issues.some((i) => i.code === 'no-suspense'), JSON.stringify(bare.issues));
+
+    // ④ O-10-1 回归锁定：无悬念但知识丰富的世界，resolve/inFlight 不得用知识量代偿——
+    // 否则评分会虚高到 100「优秀」，与 no-suspense 告警自相矛盾（修复前实为 100/优秀）
+    const noSusp = buildHealthReport({
+      meta: { title: '无悬念世界' },
+      entities: [1, 2, 3, 4, 5].map((n) => ({ id: 'e' + n, type: 'character', appears_from_chapter: 1 })),
+      knowledge: [1, 2, 3, 4, 5, 6].map((i) => ({ id: 'k' + i, holders: ['e1', 'e2'], known_from_chapter: 1 })),
+      suspense: [],
+      timeline: [{ chapter: 1, location: 'loc1' }],
+    });
+    check('无悬念+有知识：resolve/inFlight 维度归 0（不代偿）', noSusp.suspense.total === 0 && noSusp.meta.dimensions.resolve === 0 && noSusp.meta.dimensions.inFlight === 0, JSON.stringify(noSusp.meta.dimensions));
+    check('无悬念+有知识：世界观维度不被牺牲', noSusp.meta.dimensions.world === 1, String(noSusp.meta.dimensions.world));
+    check('无悬念+有知识：评分=55 需打磨（不再 100 优秀）', noSusp.meta.score === 55 && noSusp.meta.verdict === '需打磨', noSusp.meta.score + '/' + noSusp.meta.verdict);
+    check('无悬念+有知识：仍报 no-suspense 警戒', noSusp.issues.some((i) => i.code === 'no-suspense'), JSON.stringify(noSusp.issues));
   }
 
   // README 断言数快照一致性（发布 checklist：测试变更后必须同步 README 的断言数）
