@@ -116,6 +116,28 @@ body.mode-creator .logo-sub { display: none; }
 }
 .form-hint { color: var(--fg-dim); font-size: 11.5px; margin-top: 4px; }
 
+/* 新建项目：四卡片上传 */
+.np-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.np-card {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel2);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.np-card:hover { border-color: var(--accent); }
+.np-card .np-card-icon { font-size: 22px; line-height: 1; }
+.np-card .np-card-title { font-size: 12.5px; color: var(--fg); font-weight: 600; }
+.np-card .np-card-file { font-size: 10.5px; color: var(--fg-dim); word-break: break-all; }
+.np-card.has-file { border-color: var(--ok); }
+.np-card.has-file .np-card-file { color: var(--ok); }
+
 /* ---------- 主区三栏 ---------- */
 #main {
   flex: 1;

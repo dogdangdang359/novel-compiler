@@ -3328,6 +3328,50 @@ try {
         body: JSON.stringify({ id: 'a/b', manuscript: 'predictions/tmp-x/manuscript.md', canon: 'predictions/tmp-x/canon.json', outline: 'predictions/tmp-x/outline.md', premise: 'predictions/tmp-x/premise.md' }),
       });
       check('新建项目非法 id（含路径分隔符）被拒（400，保证 id→预测目录 1:1）', npBadId.status === 400, `status=${npBadId.status}`);
+      // 卡片上传 contents：合法内容写入 / 覆盖已存在 / 非法 canon / 超大 / 类型错误（界至 8MB 上限）
+      const UP = 'predictions/tmp-project-upload';
+      const upAbs = path.join(ROOT, 'app', UP);
+      const upOk = await fetchT(`http://127.0.0.1:${port}/api/projects/new`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: '上传项目', 
+          manuscript: UP + '/manuscript.md', canon: UP + '/canon.json', outline: UP + '/outline.md', premise: UP + '/premise.md',
+          contents: {
+            manuscript: '# 上传的文稿\n第一章',
+            canon: JSON.stringify({ meta: { title: '上传项目', target_reader: 'webnovel', genre: '' }, entities: [], knowledge: [], suspense: [], timeline: [] }),
+            outline: '# 上传大纲',
+            premise: '# 上传前提',
+          },
+        }),
+      }).then((r) => r.json());
+      check('上传 contents：创建成功（4 新文件）', !!upOk.ok && upOk.created.length === 4, JSON.stringify(upOk).slice(0, 200));
+      check('上传 contents：文稿内容写入', fs.readFileSync(path.join(upAbs, 'manuscript.md'), 'utf8') === '# 上传的文稿\n第一章', fs.readFileSync(path.join(upAbs, 'manuscript.md'), 'utf8'));
+      check('上传 contents：canon 内容写入', fs.readFileSync(path.join(upAbs, 'canon.json'), 'utf8').includes('上传项目'), fs.readFileSync(path.join(upAbs, 'canon.json'), 'utf8').slice(0, 80));
+      const upCov = await fetchT(`http://127.0.0.1:${port}/api/projects/new`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: '上传项目Cover',
+          manuscript: UP + '/manuscript.md', canon: UP + '/canon.json', outline: UP + '/outline.md', premise: UP + '/premise.md',
+          contents: { manuscript: '# 第二次覆盖' },
+        }),
+      }).then((r) => r.json());
+      check('上传覆盖已存在文件：内容覆盖且 created 不含已存在项', !!upCov.ok && upCov.created.length === 0 && fs.readFileSync(path.join(upAbs, 'manuscript.md'), 'utf8') === '# 第二次覆盖', JSON.stringify(upCov).slice(0, 200));
+      fs.rmSync(upAbs, { recursive: true, force: true });
+      const upBadCanon = await fetchT(`http://127.0.0.1:${port}/api/projects/new`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '上传BadCanon', contents: { canon: 'not json' } }),
+      });
+      check('上传非法 canon JSON 被拒（400）', upBadCanon.status === 400, `status=${upBadCanon.status}`);
+      const upHuge = await fetchT(`http://127.0.0.1:${port}/api/projects/new`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '上传Huge', contents: { manuscript: 'x'.repeat(9 * 1024 * 1024) } }),
+      });
+      check('上传超限内容被拒（400）', upHuge.status === 400, `status=${upHuge.status}`);
+      const upTyped = await fetchT(`http://127.0.0.1:${port}/api/projects/new`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '上传Typed', contents: { canon: 123 } }),
+      });
+      check('上传非字符串内容被拒（400）', upTyped.status === 400, `status=${upTyped.status}`);
     } finally {
       // 前缀扫描清理：tmp-save-as.md / tmp-save-copy.json / tmp-apply-canon.json 及其 .bak-* 备份
       try {

@@ -145,11 +145,33 @@
   </div>
   <div id="project-body">
     <div class="form-row"><label>项目名称</label><input id="np-name" type="text" placeholder="例如：雾都迷踪"></div>
-    <div class="form-row"><label>手稿</label><input id="np-manuscript" type="text"></div>
-    <div class="form-row"><label>canon</label><input id="np-canon" type="text"></div>
-    <div class="form-row"><label>大纲</label><input id="np-outline" type="text"></div>
-    <div class="form-row"><label>前提</label><input id="np-premise" type="text"></div>
-    <div class="form-hint">路径相对 app/ 目录；留空则按名称自动生成（examples/&lt;名称&gt;.md 等），文件不存在会自动创建。</div>
+    <div class="np-grid">
+      <label class="np-card" data-kind="manuscript">
+        <input type="file" class="np-file" data-kind="manuscript" accept=".md,.txt,text/plain,text/markdown" hidden>
+        <span class="np-card-icon">📄</span>
+        <span class="np-card-title">文稿</span>
+        <span class="np-card-file">未选择 · 用空模板</span>
+      </label>
+      <label class="np-card" data-kind="canon">
+        <input type="file" class="np-file" data-kind="canon" accept=".json,application/json" hidden>
+        <span class="np-card-icon">🗂️</span>
+        <span class="np-card-title">设定基线 · canon</span>
+        <span class="np-card-file">未选择 · 用空模板</span>
+      </label>
+      <label class="np-card" data-kind="outline">
+        <input type="file" class="np-file" data-kind="outline" accept=".md,.txt,text/plain,text/markdown" hidden>
+        <span class="np-card-icon">🗺️</span>
+        <span class="np-card-title">故事大纲</span>
+        <span class="np-card-file">未选择 · 用空模板</span>
+      </label>
+      <label class="np-card" data-kind="premise">
+        <input type="file" class="np-file" data-kind="premise" accept=".md,.txt,text/plain,text/markdown" hidden>
+        <span class="np-card-icon">🧩</span>
+        <span class="np-card-title">前提设定</span>
+        <span class="np-card-file">未选择 · 用空模板</span>
+      </label>
+    </div>
+    <div class="form-hint">点击卡片选择你的本地文件（文稿/大纲/前提为文本，canon 需为 JSON）；未选择的会用默认空模板。</div>
   </div>
   <div class="modal-foot">
     <span class="spacer"></span>

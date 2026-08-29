@@ -95,7 +95,7 @@ node rebase.js <预测.json> <实际.json> [--out <file>] [--force] [--dry-run] 
 node compile.js examples/manuscript.md examples/canon.json --reader webnovel   # 示例（as-built 演示：《风雪破庙》，与正文一致，无内置问题）
 node compile.js test/fixtures/demo-manuscript.md test/fixtures/demo-canon.json --reader webnovel   # bug 演示：《雾都迷踪》内置 7 类问题（exit 1）
 node compile.js examples/manuscript.md examples/canon.json --json > report.json # 机器可读输出
-node test/run-tests.js   # 冒烟测试（845 项断言）
+node test/run-tests.js   # 冒烟测试（852 项断言）
 
 # 模拟 + 提取 + 比对（需要 DEEPSEEK_API_KEY 环境变量）
 node simulate.js examples/outline.md --premise examples/premise.md --canon examples/canon.json --reader webnovel --out predictions/wumizongji-pred.json

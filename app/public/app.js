@@ -27,6 +27,7 @@ const state = {
   decisions: new Map(), // `${section}|${id}` -> { action, value? }
   projects: [],      // [{id}]
   activeProject: null,
+  projectUploads: {}, // 新建项目时各卡片选中的本地文件内容 {kind:{name,content}}
 };
 
 let editor = null;
@@ -281,28 +282,46 @@ function bindSaveMenu() {
 }
 
 // ---------- 新建项目 ----------
+const KIND_LABEL = { manuscript: '文稿', canon: '设定基线', outline: '故事大纲', premise: '前提设定' };
+function kindLabel(k) { return KIND_LABEL[k] || k; }
+const UPLOAD_MAX = 8 * 1024 * 1024; // 与 server.js MAX_UPLOAD_BYTES 对齐
 function openProjectModal() {
   $('#np-name').value = '';
+  // 重置各卡片的状态与隐藏 file input（label 点击即触发选择）
+  for (const k of Object.keys(state.projectUploads)) delete state.projectUploads[k];
+  document.querySelectorAll('.np-file').forEach((inp) => { inp.value = ''; });
+  document.querySelectorAll('.np-card').forEach((c) => c.classList.remove('has-file'));
+  document.querySelectorAll('.np-card-file').forEach((el) => { el.textContent = '未选择 · 用空模板'; });
   $('#np-name').focus();
   $('#project-modal').classList.remove('hidden');
 }
-function fillProjectDefaults() {
-  const name = $('#np-name').value.trim();
-  if (!name) return;
-  const safe = name.replace(/[\\/:*?"<>|]/g, '_');
-  $('#np-manuscript').value = `../examples/${safe}.md`;
-  $('#np-canon').value = `../examples/${safe}-canon.json`;
-  $('#np-outline').value = `../examples/${safe}-outline.md`;
-  $('#np-premise').value = `../examples/${safe}-premise.md`;
+function onFilePicked(e) {
+  const input = e.target;
+  const kind = input.getAttribute('data-kind');
+  const file = input.files && input.files[0];
+  if (!file) return; // 用户取消选择
+  const card = document.querySelector(`.np-card[data-kind="${kind}"]`);
+  const nameEl = card.querySelector('.np-card-file');
+  if (file.size > UPLOAD_MAX) { alert(`${kindLabel(kind)} 文件过大（超过 8MB）`); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.projectUploads[kind] = { name: file.name, content: String(reader.result) };
+    card.classList.add('has-file');
+    nameEl.textContent = `✓ ${file.name}`;
+  };
+  reader.onerror = () => { alert(`读取 ${file.name} 失败`); input.value = ''; };
+  reader.readAsText(file, 'utf-8');
 }
 async function createProject() {
   const id = $('#np-name').value.trim();
   if (!id) { alert('请填写项目名称'); return; }
   const body = { id };
-  for (const f of ['manuscript', 'canon', 'outline', 'premise']) {
-    const v = $('#' + 'np-' + f).value.trim();
-    if (v) body[f] = v;
+  const contents = {};
+  for (const kind of ['manuscript', 'canon', 'outline', 'premise']) {
+    const up = state.projectUploads[kind];
+    if (up && up.content != null) contents[kind] = up.content;
   }
+  if (Object.keys(contents).length) body.contents = contents;
   const r = await api('/api/projects/new', body);
   if (!r.ok) { log('✗ 新建项目失败: ' + r.error); return; }
   $('#project-modal').classList.add('hidden');
@@ -1139,7 +1158,7 @@ function bind() {
   $('#btn-new-project').onclick = openProjectModal;
   $('#project-close').onclick = () => $('#project-modal').classList.add('hidden');
   $('#project-create').onclick = createProject;
-  $('#np-name').addEventListener('input', fillProjectDefaults);
+  document.querySelectorAll('.np-file').forEach((inp) => inp.addEventListener('change', onFilePicked));
   bindSaveMenu();
   $('#btn-compile').onclick = compile;
   $('#btn-report').onclick = generateReport;

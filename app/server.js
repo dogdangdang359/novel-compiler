@@ -27,6 +27,8 @@ const ROOT = path.join(APP, '..');
 const PUBLIC = path.join(APP, 'public');
 const VENDOR = path.join(APP, 'node_modules', 'monaco-editor', 'min');
 const PRED_DIR = path.join(APP, 'predictions');
+// 新建项目时单个上传文件的内容上限（readBody 全局 20MB；这里按工作文件更严，防单文件撑爆）
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 // 配置文件路径：默认 app/config.json；测试可传 --config <path> 用临时配置（不触碰用户配置）
 const CONFIG_PATH = (() => {
   const i = process.argv.indexOf('--config');
@@ -364,6 +366,28 @@ async function handleApi(req, res, url) {
     const relPremise = (body.premise && String(body.premise).trim()) || `../examples/${safe}-premise.md`;
     // reader 必须是合法枚举（防注入任意值导致后续 --reader 校验失败）
     const reader = READERS.includes(body.reader) ? body.reader : 'webnovel';
+    // 卡片上传：contents 携带用户上传的各文件内容（键 creature manuscript/canon/outline/premise）。
+    // 提供内容即覆盖写入（用户明确要导入自己的文件），未提供的落回模板/保留现状。
+    const contents = {};
+    if (body.contents && typeof body.contents === 'object') {
+      for (const kind of ['manuscript', 'canon', 'outline', 'premise']) {
+        const v = body.contents[kind];
+        if (v == null) continue;
+        if (typeof v !== 'string') { return sendJson(res, 400, { ok: false, error: `${kind} 内容必须为文本` }); }
+        if (Buffer.byteLength(v, 'utf8') > MAX_UPLOAD_BYTES) {
+          return sendJson(res, 400, { ok: false, error: `${kind} 内容过大（超过 ${MAX_UPLOAD_BYTES} 字节）` });
+        }
+        contents[kind] = v;
+      }
+    }
+    // canon 内容若被上传必须是合法 JSON 对象，否则后续 compile/validate 全链路会直接炸
+    if (contents.canon != null) {
+      let parsed;
+      try { parsed = JSON.parse(contents.canon); } catch { return sendJson(res, 400, { ok: false, error: 'canon 文件内容不是合法 JSON' }); }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return sendJson(res, 400, { ok: false, error: 'canon 文件内容必须是 JSON 对象' });
+      }
+    }
     const project = {
       id: name,
       manuscript: path.resolve(APP, relManuscript),
@@ -387,7 +411,17 @@ async function handleApi(req, res, url) {
     const created = [];
     for (const kind of ['manuscript', 'canon', 'outline', 'premise']) {
       const p = project[kind];
-      if (!fs.existsSync(p)) {
+      const existing = fs.existsSync(p);
+      if (contents[kind] != null) {
+        // 用户明确上传 → 覆盖写入导入内容（无需等文件不存在才建）；已有文件不算"新建"不入 created
+        try {
+          fs.mkdirSync(path.dirname(p), { recursive: true });
+          atomicWriteFile(p, contents[kind]);
+          if (!existing) created.push(p);
+        } catch (e) {
+          return sendJson(res, 500, { ok: false, error: `写入 ${kind} 失败: ${e.message}` });
+        }
+      } else if (!existing) {
         try {
           fs.mkdirSync(path.dirname(p), { recursive: true });
           atomicWriteFile(p, templates[kind]);
