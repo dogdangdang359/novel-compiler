@@ -4665,7 +4665,7 @@ try {
     check('示例 canon 判定=优秀', g.meta.verdict === '优秀', g.meta.verdict);
     check('示例 canon 回收率=100%', g.suspense.resolveRate === 1, String(g.suspense.resolveRate));
     check('示例 canon 零过期/零悬空', g.suspense.overdue === 0 && g.suspense.dangling === 0, JSON.stringify(g.suspense));
-    check('示例 canon 平均回收章差=2', g.suspense.avgResolutionLag === 2, String(g.suspense.avgResolutionLag));
+    check('示例 canon 平均回收章差=1（同章回收记0）', g.suspense.avgResolutionLag === 1, String(g.suspense.avgResolutionLag));
     check('示例 canon 逐章数=4（span 1..4）', g.chapters.length === 4 && g.span[0] === 1 && g.span[1] === 4, JSON.stringify(g.span));
     check('示例 canon 堆积峰值=2（第2章）', g.curves.backlogPeak === 2 && g.curves.backlogPeakAt === 1, JSON.stringify(g.curves));
     check('示例 canon 覆盖/聚集/铺陈维度=1', g.meta.dimensions.coverage === 1 && g.meta.dimensions.cast === 1 && g.meta.dimensions.world > 0.8, JSON.stringify(g.meta.dimensions));
@@ -4700,7 +4700,8 @@ try {
     check('问题样本 章节跨度含预期落点（span 1..5）', p.chapters.length === 5 && p.span[1] === 5, JSON.stringify(p.span));
     check('问题样本 堆积峰值=4', p.curves.backlogPeak === 4, String(p.curves.backlogPeak));
     check('问题样本 时间线覆盖=0.4（2/5）', p.meta.dimensions.coverage === 0.4, String(p.meta.dimensions.coverage));
-    check('问题样本 评分=54 · 判定=需打磨', p.meta.score === 54 && p.meta.verdict === '需打磨', p.meta.score + '/' + p.meta.verdict);
+    check('问题样本 评分=52 · 判定=需打磨', p.meta.score === 52 && p.meta.verdict === '需打磨', p.meta.score + '/' + p.meta.verdict);
+    check('问题样本 cast 只按角色计（2角色/5=0.4）', p.meta.dimensions.cast === 0.4, String(p.meta.dimensions.cast));
     check('问题样本 警戒 4 类（过期/悬空/断档/未收）', p.issues.map((i) => i.code).join(',') === 'overdue-suspense,dangling-suspense,timeline-gap,unresolved', p.issues.map((i) => i.code).join(','));
     check('问题样本 过期警戒为 warn 级', p.issues.some((i) => i.code === 'overdue-suspense' && i.level === 'warn'), JSON.stringify(p.issues));
 
@@ -4723,6 +4724,53 @@ try {
     check('无悬念+有知识：世界观维度不被牺牲', noSusp.meta.dimensions.world === 1, String(noSusp.meta.dimensions.world));
     check('无悬念+有知识：评分=55 需打磨（不再 100 优秀）', noSusp.meta.score === 55 && noSusp.meta.verdict === '需打磨', noSusp.meta.score + '/' + noSusp.meta.verdict);
     check('无悬念+有知识：仍报 no-suspense 警戒', noSusp.issues.some((i) => i.code === 'no-suspense'), JSON.stringify(noSusp.issues));
+
+    // ⑤ O-10-2~O-10-5 锁定：cast 口径 / 权重常量 / open 跨面板对齐 / 回收章差口径
+    const { computeScore, HEALTH_WEIGHTS } = require('../src/health');
+    const { buildWorldGraph } = require('../src/worldgraph');
+    // O-10-2：cast 只计 character，location/item 不计入
+    const locCast = buildHealthReport({
+      meta: { title: '只有地点' },
+      entities: [1, 2, 3, 4, 5].map((n) => ({ id: 'loc' + n, type: 'location', appears_from_chapter: 1 })),
+      knowledge: [{ id: 'k1', holders: ['loc1', 'loc2'], known_from_chapter: 1 }],
+      suspense: [{ id: 's1', planted_in_chapter: 1, resolved_in_chapter: 1 }],
+      timeline: [{ chapter: 1, location: 'loc1' }],
+    });
+    check('O-10-2 零角色多地点 → cast=0', locCast.meta.dimensions.cast === 0, String(locCast.meta.dimensions.cast));
+    // O-10-3：权重为常量、和为 1、满帆满分
+    const ws = Object.values(HEALTH_WEIGHTS);
+    check('O-10-3 权重六键且和=1', Object.keys(HEALTH_WEIGHTS).length === 6 && Math.abs(ws.reduce((a, b) => a + b, 0) - 1) < 1e-9, ws.join(','));
+    const fullDim = { resolve: 1, overdue: 1, inFlight: 1, cast: 1, world: 1, coverage: 1 };
+    check('O-10-3 全维度满帆 → 100', computeScore(fullDim) === 100, String(computeScore(fullDim)));
+    check('O-10-3 全维度归零 → 0', computeScore({ resolve: 0, overdue: 0, inFlight: 0, cast: 0, world: 0, coverage: 0 }) === 0, String(computeScore({})));
+    // O-10-4：health.open 与 worldgraph.openSuspense 口径对齐（用同一份原始 canon 双端推导）
+    const gOpen = buildWorldGraph(ex);
+    check('O-10-4 示例：health.open 与 worldgraph.openSuspense 对齐=0', g.suspense.open === 0 && gOpen.meta.openSuspense === 0, g.suspense.open + '/' + gOpen.meta.openSuspense);
+    const problemCanon = {
+      meta: { title: '问题世界' },
+      entities: [{ id: 'a', type: 'character', appears_from_chapter: 1 }, { id: 'b', type: 'character', appears_from_chapter: 1 }, { id: 'locX', type: 'location', appears_from_chapter: 1 }],
+      knowledge: [{ id: 'k1', holders: ['a', 'b'], known_from_chapter: 1 }, { id: 'k2', holders: ['a'], known_from_chapter: 1 }],
+      suspense: [
+        { id: 's1', name: '过期悬念', planted_in_chapter: 1, expected_resolve_chapter: 1 },
+        { id: 's2', name: '悬空悬念', planted_in_chapter: 1 },
+        { id: 's3', name: '在飞悬念', planted_in_chapter: 1, expected_resolve_chapter: 5 },
+        { id: 's4', name: '已解1', planted_in_chapter: 1, expected_resolve_chapter: 2, resolved_in_chapter: 2 },
+        { id: 's5', name: '已解2', planted_in_chapter: 2, expected_resolve_chapter: 3, resolved_in_chapter: 3 },
+      ],
+      timeline: [{ chapter: 1, location: 'locX' }, { chapter: 4, location: 'locX' }],
+    };
+    const pWorld = buildWorldGraph(problemCanon);
+    const pRep = buildHealthReport(problemCanon);
+    check('O-10-4 问题样本：health.open 对齐 worldgraph.openSuspense=2', pRep.suspense.open === 2 && pWorld.meta.openSuspense === 2, pRep.suspense.open + '/' + pWorld.meta.openSuspense);
+    // O-10-5：同章回收记 0 章差
+    const sameCh = buildHealthReport({
+      meta: { title: '同章回收' },
+      entities: [{ id: 'a', type: 'character', appears_from_chapter: 1 }],
+      knowledge: [{ id: 'k1', holders: ['a'], known_from_chapter: 1 }],
+      suspense: [{ id: 's1', planted_in_chapter: 2, resolved_in_chapter: 2 }],
+      timeline: [{ chapter: 1, location: 'l' }, { chapter: 2, location: 'l' }],
+    });
+    check('O-10-5 同章回收 → 平均章差=0', sameCh.suspense.avgResolutionLag === 0, String(sameCh.suspense.avgResolutionLag));
   }
 
   // README 断言数快照一致性（发布 checklist：测试变更后必须同步 README 的断言数）

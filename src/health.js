@@ -13,13 +13,26 @@
 //   resolve    悬念回收充分度 resolved/total
 //   overdue    无过期未收堆积（过期越多越低）
 //   inFlight   悬念"有据可依"占比（已回收或在飞，即无悬空无过期）
-//   cast       活角色聚集度（实体规模，满 5 位为佳）
+//   cast       活角色聚集度（character 数，满 5 位为佳；location/item 不计入）
 //   world      世界观铺陈（knowledge 条数，满 6 条为佳）
 //   coverage   时间线章节覆盖（覆盖章节数/总章节数）
 
 const asArray = (x) => (Array.isArray(x) ? x : []);
 const fin = (n) => Number.isFinite(n);
 const min = Math.min, max = Math.max, round = Math.round;
+
+// 六维雷达健康权重（和=1）。风险维（resolve/overdue/inFlight）加权更高——
+// 悬念节奏是剧情结构的核心；结构维（cast/world/coverage）为丰富度补充。
+const HEALTH_WEIGHTS = {
+  resolve: 0.30, overdue: 0.25, inFlight: 0.15,
+  cast: 0.10, world: 0.10, coverage: 0.10,
+};
+
+// 综合评分 = 各维度×权重的加权均值，映射到 0..100（满分=100，全部维度满 1 时）。
+// 与 weights 解耦以便测试锚定：调权时改 HEALTH_WEIGHTS 即可，无需动评分函数。
+function computeScore(dimensions, weights = HEALTH_WEIGHTS) {
+  return round(100 * Object.keys(weights).reduce((s, k) => s + (dimensions[k] || 0) * weights[k], 0));
+}
 
 function chapterRange(canon) {
   let lo = Infinity, hi = -Infinity;
@@ -59,9 +72,11 @@ function buildHealthReport(canon) {
   const resolved = cat.resolved.length;
   // 无悬念（total=0）时回收率取 0：不拿世界观知识量代偿，否则评分会掩盖"结构单薄"这一真实短板
   const resolveRate = total ? resolved / total : 0;
+  const charCount = entities.filter((e) => e.type === 'character').length;
 
-  // 已回收条目的平均延迟（回收章 - 埋点章）
-  const lags = cat.resolved.map((s) => (s.resolved - (s.planted || 1) + 1)).filter((n) => n >= 1);
+  // 已回收条目的平均回收章差 = 平均(resolved - planted)，同章回收 = 0。
+  // canon 已保证 resolved >= planted（schema 拦因果倒置），故 diff 恒非负。
+  const lags = cat.resolved.map((s) => (s.resolved - (s.planted || 1))).filter((n) => n >= 0);
   const avgResolutionLag = lags.length ? round(lags.reduce((a, b) => a + b, 0) / lags.length * 10) / 10 : 0;
 
   // ② 逐章序列（章节范围由实体/知识/悬念/时间线共同界定）
@@ -77,7 +92,7 @@ function buildHealthReport(canon) {
       chapter: c,
       planted, resolved: rslvd,
       backlog: cpl - crs,                    // 悬念堆积（未收净量）
-      activeEntities: act += entities.filter((e) => e.appears_from_chapter === c).length, // 累计在役
+      activeEntities: act += entities.filter((e) => e.appears_from_chapter === c).length, // 累计在役。近似：canon 无实体"退场"字段，出现后持续记为在役，中段活跃度或偏高
       newEntities: entities.filter((e) => e.appears_from_chapter === c).length,
       newKnowledge: knowledge.filter((k) => k.known_from_chapter === c).length,
       timelineEntries: timeline.filter((t) => t.chapter === c).length,
@@ -95,20 +110,13 @@ function buildHealthReport(canon) {
     resolve: min(1, resolveRate),
     overdue: cat.overdue.length === 0 ? 1 : max(0, 1 - cat.overdue.length * 0.2),
     inFlight: total ? (resolved + cat.inflight.length) / total : 0,
-    cast: min(1, entities.length / 5),
+    cast: min(1, charCount / 5),
     world: min(1, knowledge.length / 6),
     coverage: min(1, coverage),
   };
 
-  // ④ 综合评分（风险维加权更高）
-  const score = round(100 * (
-    dimensions.resolve * 0.30 +
-    dimensions.overdue * 0.25 +
-    dimensions.inFlight * 0.15 +
-    dimensions.cast * 0.10 +
-    dimensions.world * 0.10 +
-    dimensions.coverage * 0.10
-  ));
+  // ④ 综合评分（权重见模块顶部 HEALTH_WEIGHTS）
+  const score = computeScore(dimensions);
   const verdict = score >= 85 ? '优秀' : score >= 70 ? '健康' : score >= 50 ? '需打磨' : '需大修';
 
   // ⑤ 警戒清单
@@ -140,6 +148,8 @@ function buildHealthReport(canon) {
       total, resolved, overdue: cat.overdue.length, inflight: cat.inflight.length,
       dangling: cat.dangling.length, resolveRate: round(resolveRate * 100) / 100,
       avgResolutionLag,
+      // 对齐世界观图谱 openSuspense 口径：无 expected 或 expected<=planted 的未收 = overdue+dangling
+      open: cat.overdue.length + cat.dangling.length,
     },
     chapters,
     curves: { backlogPeak, backlogPeakAt: backlogPeak > 0 ? chapters.reduce((m, x, i) => (x.backlog === backlogPeak ? i : m), -1) : -1, lastEntityChapter },
@@ -148,4 +158,4 @@ function buildHealthReport(canon) {
   };
 }
 
-module.exports = { buildHealthReport };
+module.exports = { buildHealthReport, computeScore, HEALTH_WEIGHTS };
